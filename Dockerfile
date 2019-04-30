@@ -14,7 +14,9 @@ ADD deps.edn .
 RUN ./scripts/test.sh
 RUN ./scripts/compile.sh
 
-FROM scratch
+FROM alpine
 COPY --from=BASE /concourse-pcf-foundation-resource /
+
+ADD opt-resource /opt/resource
 
 CMD ["/concourse-pcf-foundation-resource"]

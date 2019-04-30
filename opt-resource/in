@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+set -e
+
+/concourse-pcf-foundation-resource in "$@"
