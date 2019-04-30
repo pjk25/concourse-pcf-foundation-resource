@@ -5,7 +5,6 @@
                   :main-opts ["-m" "cognitect.test-runner"]}
            :user {:extra-paths ["user"]
                   :extra-deps {org.clojure/tools.namespace {:mvn/version "0.3.0-alpha4"}}}
-           :depstar {:extra-deps {seancorfield/depstar {:mvn/version "0.1.6"}}}
            :native-image {:main-opts ["-m clj.native-image concourse-pcf-foundation-resource.cli"
                                       "-H:Name=concourse-pcf-foundation-resource"
                                       "-Dclojure.compiler.direct-linking=true"
