@@ -74,3 +74,6 @@
         (catch Exception e
           (if (:debug options) (.printStackTrace e))
           (exit 1 (str "\nERROR: " e)))))))
+
+; (s/def ::source (s/keys :req-un [::opsmgr]))
+; (s/def ::check-payload (s/keys :req-un [::source ::version]))
