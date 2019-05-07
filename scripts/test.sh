@@ -2,4 +2,4 @@
 
 set -euxo pipefail
 
-clojure -Atest "$@"
+clojure -A:test "$@"

@@ -2,7 +2,10 @@
   (:gen-class)
   (:require [clojure.string :as string]
             [clojure.tools.cli :refer [parse-opts]]
-            [concourse-pcf-foundation-resource.core :as core]))
+            [clojure.data.json :as json]
+            [concourse-pcf-foundation-resource.om-cli :as om-cli]
+            [concourse-pcf-foundation-resource.core :as core]
+            [concourse-pcf-foundation-resource.check :as check]))
 
 (set! *warn-on-reflection* true)
 
@@ -44,7 +47,7 @@
      ;; custom validation on arguments
       (and (= 1 (count arguments))
            (#{"check"} (first arguments)))
-      {:action core/check :options options}
+      {:action check/check :options options}
 
       (and (= 1 (count arguments))
            (#{"in"} (first arguments)))
@@ -66,6 +69,7 @@
     (if exit-message
       (exit (if ok? 0 1) exit-message)
       (try
+        (json/write (action om-cli/om options (json/read *in*)) *out*)
         (action options)
         (catch Exception e
           (if (:debug options) (.printStackTrace e))

@@ -2,4 +2,4 @@
 
 set -euxo pipefail
 
-clj -A:user -C:test -r
+clj -A:user -C:test -R:test -r
