@@ -13,7 +13,7 @@
         "foo"))))
 
 (s/fdef check
-        :args (s/cat :om (s/fspec :args ::om-cli/om)
+        :args (s/cat :om ::om-cli/om
                      :previous-version ::version)
         :ret ::version)
 

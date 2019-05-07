@@ -7,7 +7,8 @@
 
 (def fake-om
   (reify om-cli/Om
-    (staged-director-config [this] "---\ndirector-config: imagine-yaml")
+    (staged-director-config [this]
+      "---\ndirector-config: imagine-yaml")
     (curl [this path]
       (condp = path
         "/api/v0/installations" "\"installations-json\""
@@ -16,8 +17,5 @@
 
 (deftest check
   (stest/instrument `check/check)
-  (is (= (check/check fake-om {:source {:opsmgr {:url "opsman.company.com"
-                                                 :username "opsman-user"
-                                                 :password "a-password"}}
-                               :version "fake-version"})
+  (is (= (check/check fake-om "fake-version")
          ["a"])))
