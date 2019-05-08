@@ -6,15 +6,17 @@
 (s/def ::version string?)
 
 (defn check
-  [om previous-version]
-  (let [installations-result (om-cli/curl om "/api/v0/installations")]
-    (let [pending-changes-result (om-cli/curl om "/api/v0/staged/pending_changes")]
-      (let [config-result (om-cli/staged-director-config om)]
-        "foo"))))
+  [options om payload]
+  (let [{previous-version :version} payload]
+    (let [installations-result (om-cli/curl om "/api/v0/installations")]
+      (let [pending-changes-result (om-cli/curl om "/api/v0/staged/pending_changes")]
+        (let [config-result (om-cli/staged-director-config om)]
+          "foo")))))
 
 (s/fdef check
-        :args (s/cat :om ::om-cli/om
-                     :previous-version ::version)
+        :args (s/cat :options any?
+                     :om ::om-cli/om
+                     :payload (s/keys :req-un [::version]))
         :ret ::version)
 
 ; approximately, this should:

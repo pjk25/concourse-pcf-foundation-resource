@@ -1,0 +1,69 @@
+{
+  "installations": [
+    {
+      "user_name": "admin",
+      "finished_at": "2018-04-26T03:27:54.035Z",
+      "started_at": "2018-04-26T03:19:00.855Z",
+      "status": "succeeded",
+      "additions": [],
+      "deletions": [
+        {
+          "identifier": "another-example-product",
+          "label": "Another Example Product",
+          "product_version": "2.1.4",
+          "change_type": "deletion",
+          "deployment_status": "successful",
+          "guid": "another-example-product-1ba749ac9f6fcb7181ee"
+        }
+      ],
+      "updates": [
+        {
+          "identifier": "example-product",
+          "label": "Ops Manager: Example Product",
+          "product_version": "2.1.6",
+          "change_type": "update",
+          "deployment_status": "successful",
+          "guid": "example-product-4bf791dcdba551420a1f"
+        }
+      ],
+      "unchanged": [],
+      "id": 2
+    },
+    {
+      "user_name": "admin",
+      "finished_at": "2018-04-26T03:14:45.528Z",
+      "started_at": "2018-04-26T02:35:43.175Z",
+      "status": "succeeded",
+      "additions": [
+        {
+          "identifier": "example-product",
+          "label": "Ops Manager: Example Product",
+          "product_version": "2.1.6",
+          "change_type": "addition",
+          "deployment_status": "successful",
+          "guid": "example-product-4bf791dcdba551420a1f"
+        },
+        {
+          "identifier": "another-example-product",
+          "label": "Another Example Product",
+          "product_version": "2.1.4",
+          "change_type": "addition",
+          "deployment_status": "successful",
+          "guid": "another-example-product-1ba749ac9f6fcb7181ee"
+        },
+        {
+          "identifier": "p-bosh",
+          "label": "BOSH Director",
+          "product_version": "2.2-build.96",
+          "change_type": "addition",
+          "deployment_status": "successful",
+          "guid": "p-bosh-dd141cde18ccc883d542"
+        }
+      ],
+      "deletions": [],
+      "updates": [],
+      "unchanged": [],
+      "id": 1
+    }
+  ]
+}

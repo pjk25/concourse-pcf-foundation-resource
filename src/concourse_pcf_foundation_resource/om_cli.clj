@@ -35,6 +35,7 @@
                                            "--username" username
                                            "--password" password
                                            "curl"
+                                           "--silent"
                                            "--path" path)]
       (if (= 0 exit)
         out

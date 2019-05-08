@@ -11,11 +11,11 @@
       "---\ndirector-config: imagine-yaml")
     (curl [this path]
       (condp = path
-        "/api/v0/installations" "\"installations-json\""
-        "/api/v0/staged/pending_changes" "\"pending-changes-json\""
-        "whatever om curl does on a 404"))))
+        "/api/v0/installations" (slurp "resources/fixtures/installations.json")
+        "/api/v0/staged/pending_changes" (slurp "resources/fixtures/pending_changes.json")
+        (throw (Exception. (slurp "resources/fixtures/curl_not_found.html")))))))
 
 (deftest check
   (stest/instrument `check/check)
-  (is (= (check/check fake-om "fake-version")
+  (is (= (check/check {} fake-om {:version "fake-version"})
          ["a"])))
