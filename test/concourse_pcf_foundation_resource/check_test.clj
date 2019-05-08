@@ -8,7 +8,7 @@
 (def fake-om
   (reify om-cli/Om
     (staged-director-config [this]
-      "---\ndirector-config: imagine-yaml")
+      (slurp "resources/fixtures/staged-director-config.yml"))
     (curl [this path]
       (condp = path
         "/api/v0/installations" (slurp "resources/fixtures/installations.json")

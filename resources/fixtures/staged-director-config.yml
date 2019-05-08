@@ -1,0 +1,67 @@
+az-configuration:
+- name: foo-az
+  iaas_configuration_guid: fake-guid
+- name: bar-az
+  iaas_configuration_guid: fake-guid
+- name: baz-az
+  iaas_configuration_guid: fake-guid
+network-assignment:
+  network:
+    name: infra
+  other_availability_zones: []
+  singleton_availability_zone:
+    name: bar-az
+networks-configuration:
+  icmp_checks_enabled: false
+  networks: []
+properties-configuration:
+  director_configuration:
+    allow_legacy_agents: true
+    blobstore_type: local
+    bosh_recreate_on_next_deploy: false
+    bosh_recreate_persistent_disks_on_next_deploy: false
+    database_type: internal
+    director_worker_count: 5
+    encryption:
+      keys: []
+      providers: []
+    excluded_recursors:
+    - 169.254.169.254
+    hm_emailer_options:
+      enabled: false
+    hm_pager_duty_options:
+      enabled: false
+    identification_tags: {}
+    keep_unreachable_vms: false
+    local_blobstore_options:
+      tls_enabled: true
+    ntp_servers_string: 10.1.99.1, 10.1.98.1
+    post_deploy_enabled: false
+    resurrector_enabled: true
+    retry_bosh_deploys: false
+  dns_configuration:
+    handlers: []
+  security_configuration:
+    generate_vm_passwords: true
+    trusted_certificates: ""
+  syslog_configuration:
+    enabled: false
+resource-configuration:
+  compilation:
+    instances: automatic
+    instance_type:
+      id: xlarge.disk
+    internet_connected: false
+  director:
+    instances: automatic
+    persistent_disk:
+      size_mb: "204800"
+    instance_type:
+      id: automatic
+    internet_connected: false
+vmextensions-configuration:
+- name: internal-httpslb
+  cloud_properties:
+    backend_service:
+      name: internal-httpslb
+      scheme: INTERNAL
