@@ -6,7 +6,7 @@
 (s/def ::version string?)
 
 (defn check
-  [options om payload]
+  [cli-options om payload]
   (let [{previous-version :version} payload]
     (let [installations-result (om-cli/curl om "/api/v0/installations")]
       (let [pending-changes-result (om-cli/curl om "/api/v0/staged/pending_changes")]
@@ -14,7 +14,7 @@
           "foo")))))
 
 (s/fdef check
-        :args (s/cat :options any?
+        :args (s/cat :cli-options map?
                      :om ::om-cli/om
                      :payload (s/keys :req-un [::version]))
         :ret ::version)
