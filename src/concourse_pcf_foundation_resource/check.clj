@@ -45,11 +45,3 @@
                      :payload (s/keys :opt-un [::version]))
         :ret (s/coll-of ::version))
 
-; approximately, this should:
-; 1. check if changes are being applied, if so fail (GET /api/v0/installations)
-; 2. check if changes are pending, if so fail (GET /api/v0/staged/pending_changes)
-; 3. fetch the staged director config, saving it to a file
-; 4. compute the sha1sum of the contents of that file
-; 5. return that sha as the version of the foundation
-
-; Special case: if the director tile needs installation, then this is probably a fresh opsman. There are pending changes automatically.

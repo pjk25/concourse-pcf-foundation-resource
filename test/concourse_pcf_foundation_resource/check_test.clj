@@ -28,19 +28,19 @@
                                (condp = path
                                  "/api/v0/installations" (slurp "resources/fixtures/installations_running.json")
                                  "/api/v0/staged/pending_changes" (slurp "resources/fixtures/pending_changes.json")
-                                 (throw (ex-info (slurp "resources/fixtures/curl_not_found.html") {:path path})))))]
+                                 (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
                (is (thrown? clojure.lang.ExceptionInfo (check/check {} fake-om {}))))))
 
-  (comment (testing "when changes are pending"
-             (let [fake-om (reify om-cli/Om
-                             (staged-director-config [this]
-                               (slurp "resources/fixtures/staged-director-config.yml"))
-                             (curl [this path]
-                               (condp = path
-                                 "/api/v0/installations" (slurp "resources/fixtures/installations.json")
-                                 "/api/v0/staged/pending_changes" (slurp "resources/fixtures/pending_changes.json")
-                                 (throw (ex-info (slurp "resources/fixtures/curl_not_found.html") {:path path})))))]
-               (is (thrown? clojure.lang.ExceptionInfo (check/check {} fake-om {}))))))
+  (testing "when changes are pending"
+    (let [fake-om (reify om-cli/Om
+                    (staged-director-config [this]
+                      (slurp "resources/fixtures/staged-director-config.yml"))
+                    (curl [this path]
+                      (condp = path
+                        "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
+                        "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/docs.json")
+                        (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
+      (is (thrown? clojure.lang.ExceptionInfo (check/check {} fake-om {})))))
 
   (comment (testing "when the version can be determined"
              (let [fake-om (reify om-cli/Om
