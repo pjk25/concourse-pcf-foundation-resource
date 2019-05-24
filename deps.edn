@@ -10,8 +10,14 @@
            :native-image {:main-opts ["-m clj.native-image concourse-pcf-foundation-resource.cli"
                                       "-H:Name=concourse-pcf-foundation-resource"
                                       "-Dclojure.compiler.direct-linking=true"
+                                      "--initialize-at-build-time"
                                       "--static"
-                                      "--report-unsupported-elements-at-runtime"]
+                                      "--no-fallback"]
                           :extra-deps {clj.native-image
                                        {:git/url "https://github.com/taylorwood/clj.native-image.git"
-                                        :sha "498baa963e914fd817dbf33ea251729efd0c8f95"}}}}}
+                                        :sha "498baa963e914fd817dbf33ea251729efd0c8f95"}}}
+           :lint {:extra-deps {com.jameslaverack/cljfmt-runner
+                               {:git/url "https://github.com/JamesLaverack/cljfmt-runner"
+                                :sha "97960e9a6464935534b5a6bab529e063d0027128"}}
+                  :main-opts ["-m" "cljfmt-runner.check"]}
+           :lint/fix {:main-opts ["-m" "cljfmt-runner.fix"]}}}

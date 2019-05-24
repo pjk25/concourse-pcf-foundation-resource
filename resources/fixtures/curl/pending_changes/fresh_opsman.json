@@ -1,0 +1,24 @@
+{
+  "product_changes": [
+    {
+      "guid": "p-bosh-546abd937c8def287a54",
+      "action": "install",
+      "errands": [],
+      "staged": {
+        "guid": "p-bosh-546abd937c8def287a54",
+        "identifier": "p-bosh",
+        "label": "BOSH Director",
+        "version": "2.5.4-build.189",
+        "depends_on": [],
+        "stemcell_version": "250.48"
+      },
+      "deployed": null,
+      "last_successful_deployed": null,
+      "completeness_checks": {
+        "configuration_complete": false,
+        "stemcell_present": true,
+        "configurable_properties_valid": true
+      }
+    }
+  ]
+}

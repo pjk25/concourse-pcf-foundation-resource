@@ -2,4 +2,4 @@
 
 set -e
 
-/concourse-pcf-foundation-resource check "$@"
+concourse-pcf-foundation-resource check "$@"

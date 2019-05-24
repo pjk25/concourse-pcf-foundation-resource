@@ -8,7 +8,10 @@
 
 (s/def ::password string?)
 
-(s/def ::opsmgr (s/keys :req-un [::url ::username ::password]))
+(s/def ::skip_ssl_validation boolean?)
+
+(s/def ::opsmgr (s/keys :req-un [::url ::username ::password]
+                        :opt-un [::skip_ssl_validation]))
 
 (defprotocol Om
   (staged-director-config [this])
@@ -16,27 +19,26 @@
 
 (s/def ::om #(satisfies? Om %))
 
+(defn- base-om-args
+  [opsmgr]
+  (let [{:keys [url username password]} opsmgr
+        required-args ["om"
+                       "--target" url
+                       "--username" username
+                       "--password" password]]
+    (if (:skip_ssl_validation opsmgr)
+      (conj required-args "--skip-ssl-validation")
+      required-args)))
+
 (deftype OmCli [opsmgr]
   Om
   (staged-director-config [this]
-    (let [{:keys [url username password]} opsmgr
-          {:keys [exit out err]} (shell/sh "om"
-                                           "--target" url
-                                           "--username" username
-                                           "--password" password
-                                           "staged-director-config")]
+    (let [{:keys [exit out err]} (apply shell/sh (conj (base-om-args opsmgr) "staged-director-config"))]
       (if (= 0 exit)
         out
-        (throw (Exception. err)))))
+        (throw (ex-info err {})))))
   (curl [this path]
-    (let [{:keys [url username password]} opsmgr
-          {:keys [exit out err]} (shell/sh "om"
-                                           "--target" url
-                                           "--username" username
-                                           "--password" password
-                                           "curl"
-                                           "--silent"
-                                           "--path" path)]
+    (let [{:keys [exit out err]} (apply shell/sh (conj (base-om-args opsmgr) "curl" "--silent" "--path" path))]
       (if (= 0 exit)
         out
-        (throw (Exception. err))))))
+        (throw (ex-info err {:path path}))))))

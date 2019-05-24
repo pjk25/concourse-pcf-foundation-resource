@@ -3,7 +3,6 @@
   (:require [clojure.string :as string]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.data.json :as json]
-            [concourse-pcf-foundation-resource.util :as util]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.core :as core]
             [concourse-pcf-foundation-resource.check :as check]))
@@ -70,9 +69,11 @@
     (if exit-message
       (exit (if ok? 0 1) exit-message)
       (try
-        (let [{:keys [source] :as payload} (util/keywordize (json/read *in*))]
-          (json/write (action options (om-cli/->OmCli (:opsmgr source)) payload) *out*))
-        (shutdown-agents)
+        (let [payload (json/read *in* :key-fn keyword)
+              om (om-cli/->OmCli (get-in payload [:source :opsmgr]))]
+          (json/write (action options om payload) *out*)
+          (flush)
+          (shutdown-agents))
         (catch Exception e
           (if (:debug options) (.printStackTrace e))
           (exit 1 (str "\nERROR: " e)))))))
