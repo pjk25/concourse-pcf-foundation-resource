@@ -21,14 +21,12 @@
 
 (defn- base-om-args
   [opsmgr]
-  (let [{:keys [url username password]} opsmgr
-        required-args ["om"
-                       "--target" url
-                       "--username" username
-                       "--password" password]]
-    (if (:skip_ssl_validation opsmgr)
-      (conj required-args "--skip-ssl-validation")
-      required-args)))
+  (let [{:keys [url username password]} opsmgr]
+    (cond-> ["om"
+             "--target" url
+             "--username" username
+             "--password" password]
+            (:skip_ssl_validation opsmgr) (conj "--skip-ssl-validation"))))
 
 (deftype OmCli [opsmgr]
   Om
