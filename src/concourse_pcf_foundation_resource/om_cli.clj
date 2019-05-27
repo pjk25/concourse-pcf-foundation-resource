@@ -19,24 +19,22 @@
 
 (s/def ::om #(satisfies? Om %))
 
-(defn- base-om-args
-  [opsmgr]
-  (let [{:keys [url username password]} opsmgr]
-    (cond-> ["om"
-             "--target" url
-             "--username" username
-             "--password" password]
-            (:skip_ssl_validation opsmgr) (conj "--skip-ssl-validation"))))
+(defn- sh-om
+  [opsmgr & args]
+  (let [{:keys [url username password]} opsmgr
+        base-args (cond-> ["om" "--target" url "--username" username "--password" password]
+                          (:skip_ssl_validation opsmgr) (conj "--skip-ssl-validation"))]
+    (apply shell/sh (concat base-args args))))
 
 (deftype OmCli [opsmgr]
   Om
   (staged-director-config [this]
-    (let [{:keys [exit out err]} (apply shell/sh (conj (base-om-args opsmgr) "staged-director-config"))]
+    (let [{:keys [exit out err]} (sh-om opsmgr "staged-director-config")]
       (if (= 0 exit)
         out
         (throw (ex-info err {})))))
   (curl [this path]
-    (let [{:keys [exit out err]} (apply shell/sh (conj (base-om-args opsmgr) "curl" "--silent" "--path" path))]
+    (let [{:keys [exit out err]} (sh-om opsmgr "curl" "--silent" "--path" path)]
       (if (= 0 exit)
         out
         (throw (ex-info err {:path path}))))))
