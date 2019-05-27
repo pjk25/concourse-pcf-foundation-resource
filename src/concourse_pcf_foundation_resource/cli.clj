@@ -4,8 +4,9 @@
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.data.json :as json]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
-            [concourse-pcf-foundation-resource.core :as core]
-            [concourse-pcf-foundation-resource.check :as check]))
+            [concourse-pcf-foundation-resource.check :as check]
+            [concourse-pcf-foundation-resource.in :as in]
+            [concourse-pcf-foundation-resource.out :as out]))
 
 (set! *warn-on-reflection* true)
 
@@ -49,13 +50,13 @@
            (#{"check"} (first arguments)))
       {:action check/check :options options}
 
-      (and (= 1 (count arguments))
+      (and (= 2 (count arguments))
            (#{"in"} (first arguments)))
-      {:action core/in :options options}
+      {:action in/in :options (assoc options :destination (last arguments))}
 
-      (and (= 1 (count arguments))
+      (and (= 2 (count arguments))
            (#{"out"} (first arguments)))
-      {:action core/out :options options}
+      {:action out/out :options (assoc options :source (last arguments))}
 
       :else ; failed custom validation => exit with usage summary
       {:exit-message (usage summary)})))
@@ -78,5 +79,3 @@
           (if (:debug options) (.printStackTrace e))
           (exit 1 (str "\nERROR: " e)))))))
 
-; (s/def ::source (s/keys :req-un [::opsmgr]))
-; (s/def ::check-payload (s/keys :req-un [::source ::version]))

@@ -8,6 +8,7 @@
 
 (deftest check
   (stest/instrument `check/check)
+
   (testing "a fresh opsman with authentication already set up"
     (let [fake-om (reify om-cli/Om
                     (staged-director-config [this]
@@ -19,7 +20,9 @@
                         "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
                         (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
       (is (= (check/check {} fake-om {})
-             [{:opsman_version "2.5.4-build.189"}]))))
+             [{:opsman_version "2.5.4-build.189"
+               :configuration_hash "some-hash"}]))))
+
   (comment (testing "when changes are being applied"
              (let [fake-om (reify om-cli/Om
                              (staged-director-config [this]
