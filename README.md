@@ -28,13 +28,14 @@ hash of the opsman configuration manfiest
 
 ### in
 
-- foundation.yml
+- configuration.yml
 
-Example foundation.yml:
+Example configuration.yml:
 
 ```yaml
 ---
-foo: to-the-bar
+director-config:
+    foo: to-the-bar
 ```
 
 Example response:
@@ -53,6 +54,10 @@ If this is a fresh OpsMan with nothing deployed, then `configuration_hash` will 
 
 ### out
 
-- foundation.yml
+- configuration.yml
+
+params:
+
+dry_run: false|true
 
 This only makes changes if what's there differs, things not specified are assumed floating
