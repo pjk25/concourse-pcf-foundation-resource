@@ -26,7 +26,8 @@
   (testing "with a valid version"
     (let [temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
           destination (.toString temp-dir)]
-      (is (= (in/in {:destination destination} fake-om {})
+      (is (= (in/in {:destination destination} fake-om {:version {:opsman_version "2.5.4-build.189"
+                                                                  :configuration_hash "some-hash"}})
              {:version {:opsman_version "2.5.4-build.189"
                         :configuration_hash "some-hash"}
               :metadata []}))
