@@ -37,6 +37,10 @@
          (= "install" (:action (first product_changes)))
          (= "p-bosh" (:identifier (:staged (first product_changes)))))))
 
+(defn- deployed-configuration
+  [cli-options om]
+  (om-cli/staged-director-config om))
+
 (defn current-version
   [cli-options om destination]
   (let [installations (json/read-str (om-cli/curl om "/api/v0/installations") :key-fn keyword)]
@@ -45,15 +49,17 @@
       (let [pending-changes-result (json/read-str (om-cli/curl om "/api/v0/staged/pending_changes") :key-fn keyword)]
         (cond
           (fresh-opsman? pending-changes-result) (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)]
-                                                   [{:opsman_version (get-in info [:info :version])}])
+                                                   {:opsman_version (get-in info [:info :version])})
           (changes-pending? pending-changes-result) (throw (ex-info "Changes are pending" {}))
-          :else (let [config-result (om-cli/staged-director-config om)
+          :else (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
+                      deployed-configuration (deployed-configuration cli-options om)
                       config-file (io/file destination "configuration.yml")]
                   (if (:debug cli-options)
                     (binding [*out* *err*]
                       (println "Writing data to" (.toString config-file))))
-                  (spit config-file config-result)
-                  (digest/sha256 config-result)))))))
+                  (spit config-file deployed-configuration)
+                  {:opsman_version (get-in info [:info :version])
+                   :configuration_hash (digest/sha256 deployed-configuration)}))))))
 
 (s/fdef current-version
         :args (s/cat :cli-options map?

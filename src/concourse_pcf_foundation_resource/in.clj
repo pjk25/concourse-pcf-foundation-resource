@@ -6,7 +6,12 @@
             [concourse-pcf-foundation-resource.digest :as digest]))
 
 (defn in
-  [cli-options om payload])
+  [cli-options om payload]
+  (let [requested-version (:version payload)
+        current-version (core/current-version cli-options om (:destination cli-options))]
+    (if (= current-version requested-version)
+      {:version current-version :metadata []}
+      (throw (ex-info "The requested version is no longer available." {:version requested-version})))))
 
 (s/fdef in
         :args (s/cat :cli-options map?

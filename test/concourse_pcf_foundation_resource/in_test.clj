@@ -30,8 +30,7 @@
                                                                   :configuration_hash "some-hash"}})
              {:version {:opsman_version "2.5.4-build.189"
                         :configuration_hash "some-hash"}
-              :metadata []}))
-      (is (.exists (io/file destination "configuration.yml")))))
+              :metadata []}))))
 
   (testing "when the version does not exist"
     (let [temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
