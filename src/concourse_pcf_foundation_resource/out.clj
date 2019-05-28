@@ -7,7 +7,7 @@
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.digest :as digest]
-            [concourse-pcf-foundation-resource.yaml :as yaml])
+            [clj-yaml.core :as yaml])
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
@@ -34,7 +34,7 @@
   [cli-options om payload]
   (let [deployed-configuration (core/deployed-configuration cli-options om)]
 
-    (foundation/print-diff deployed-configuration (yaml/read-str (slurp (io/file (:source cli-options) "configuration.yml"))))
+    (foundation/print-diff deployed-configuration (yaml/parse-string (slurp (io/file (:source cli-options) "configuration.yml"))))
 
     (throw (ex-info "Don't know how to converge upon the desired state." {})))
   ; retrieve the current version/config
