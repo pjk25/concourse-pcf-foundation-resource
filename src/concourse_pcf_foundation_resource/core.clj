@@ -2,8 +2,10 @@
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
+            [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
-            [concourse-pcf-foundation-resource.digest :as digest])
+            [concourse-pcf-foundation-resource.digest :as digest]
+            [concourse-pcf-foundation-resource.yaml :as yaml])
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
@@ -37,29 +39,29 @@
          (= "install" (:action (first product_changes)))
          (= "p-bosh" (:identifier (:staged (first product_changes)))))))
 
-(defn- deployed-configuration
+(defn deployed-configuration
   [cli-options om]
-  (om-cli/staged-director-config om))
-
-(defn current-version
-  [cli-options om destination]
   (let [installations (json/read-str (om-cli/curl om "/api/v0/installations") :key-fn keyword)]
     (if (changes-being-applied? installations)
       (throw (ex-info "Changes are currently being applied" {}))
       (let [pending-changes-result (json/read-str (om-cli/curl om "/api/v0/staged/pending_changes") :key-fn keyword)]
         (cond
-          (fresh-opsman? pending-changes-result) (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)]
-                                                   {:opsman_version (get-in info [:info :version])})
+          (fresh-opsman? pending-changes-result) nil
           (changes-pending? pending-changes-result) (throw (ex-info "Changes are pending" {}))
-          :else (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
-                      deployed-configuration (deployed-configuration cli-options om)
-                      config-file (io/file destination "configuration.yml")]
-                  (if (:debug cli-options)
-                    (binding [*out* *err*]
-                      (println "Writing data to" (.toString config-file))))
-                  (spit config-file deployed-configuration)
-                  {:opsman_version (get-in info [:info :version])
-                   :configuration_hash (digest/sha256 deployed-configuration)}))))))
+          :else (yaml/read-str (om-cli/staged-director-config om)))))))
+
+(defn current-version!
+  [cli-options om destination]
+  (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
+        deployed-configuration (deployed-configuration cli-options om)]
+    (if deployed-configuration
+      (let [config-file (io/file destination "configuration.yml")]
+        (if (:debug cli-options)
+          (binding [*out* *err*]
+            (println "Writing data to" (.toString config-file))))
+        (yaml/write-file config-file deployed-configuration)))
+    (cond-> {:opsman_version (get-in info [:info :version])}
+            deployed-configuration (assoc :configuration_hash (foundation/hash-of deployed-configuration)))))
 
 (s/fdef current-version
         :args (s/cat :cli-options map?

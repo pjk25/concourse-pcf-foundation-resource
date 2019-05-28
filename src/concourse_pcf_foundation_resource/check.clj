@@ -10,7 +10,7 @@
   [cli-options om payload]
   (let [temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
         destination (.toString temp-dir)]
-    [(core/current-version cli-options om destination)]))
+    [(core/current-version! cli-options om destination)]))
 
 (s/fdef check
         :args (s/cat :cli-options map?

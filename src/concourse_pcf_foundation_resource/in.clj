@@ -8,7 +8,7 @@
 (defn in
   [cli-options om payload]
   (let [requested-version (:version payload)
-        current-version (core/current-version cli-options om (:destination cli-options))]
+        current-version (core/current-version! cli-options om (:destination cli-options))]
     (if (= current-version requested-version)
       {:version current-version :metadata []}
       (throw (ex-info "The requested version is no longer available." {:version requested-version})))))

@@ -24,7 +24,7 @@
                         (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))
           temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
           destination (.toString temp-dir)]
-      (is (= (core/current-version {} fake-om destination)
+      (is (= (core/current-version! {} fake-om destination)
              {:opsman_version "2.5.4-build.189"}))))
 
   (testing "when changes are being applied"
@@ -36,7 +36,7 @@
                         "/api/v0/installations" (slurp "resources/fixtures/installations_running.json")
                         "/api/v0/staged/pending_changes" (slurp "resources/fixtures/pending_changes.json")
                         (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
-      (is (thrown? clojure.lang.ExceptionInfo (core/current-version {} fake-om "")))))
+      (is (thrown? clojure.lang.ExceptionInfo (core/current-version! {} fake-om "")))))
 
   (testing "when changes are pending"
     (let [fake-om (reify om-cli/Om
@@ -47,7 +47,7 @@
                         "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
                         "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/docs.json")
                         (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
-      (is (thrown? clojure.lang.ExceptionInfo (core/current-version {} fake-om "")))))
+      (is (thrown? clojure.lang.ExceptionInfo (core/current-version! {} fake-om "")))))
 
   (testing "when the version can be determined"
     (let [fake-om (reify om-cli/Om
@@ -61,7 +61,7 @@
                         (throw (ex-info (slurp "resources/fixtures/curl_not_found.html") {:path path})))))
           temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
           destination (.toString temp-dir)]
-      (is (= (core/current-version {} fake-om destination)
+      (is (= (core/current-version! {} fake-om destination)
              [{:opsman_version "2.5.4-build.189"
                :configuration_hash (digest/sha256 (slurp "resources/fixtures/staged-director-config.yml"))}]))
       (is (.exists (io/file destination "configuration.yml"))))))
