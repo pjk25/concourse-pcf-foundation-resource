@@ -20,9 +20,9 @@
     (println)
     (println "Changes required:")
     (match [current-config desired-config]
-      [{:director-config _} {:director-config _}] (if (not (= current-config desired-config)) (println "\tDirector configuration update"))
-      [_                    {:director-config _}] (println "\tDeploy director")
-      [{:director-config _} _]                    (println "\tDestroy director"))))
+           [{:director-config _} {:director-config _}] (if (not (= current-config desired-config)) (println "\tDirector configuration update"))
+           [_                    {:director-config _}] (println "\tDeploy director")
+           [{:director-config _} _                   ] (println "\tDestroy director"))))
 
 (s/fdef print-diff
         :args (s/cat :current-config ::config :desired-config ::config)
