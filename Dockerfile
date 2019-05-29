@@ -10,7 +10,7 @@ ADD resources resources
 ADD test test
 ADD deps.edn .
 
-# RUN ./scripts/test.sh
+RUN ./scripts/test.sh
 RUN ./scripts/compile.sh
 
 FROM openjdk:11-jre-slim
