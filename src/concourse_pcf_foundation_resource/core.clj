@@ -5,7 +5,7 @@
             [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.digest :as digest]
-            [clj-yaml.core :as yaml])
+            [concourse-pcf-foundation-resource.yaml :as yaml])
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
@@ -48,7 +48,7 @@
         (cond
           (fresh-opsman? pending-changes-result) nil
           (changes-pending? pending-changes-result) (throw (ex-info "Changes are pending" {}))
-          :else (yaml/parse-string (om-cli/staged-director-config om)))))))
+          :else (yaml/read-str (om-cli/staged-director-config om)))))))
 
 (defn current-version!
   [cli-options om destination]
@@ -59,7 +59,7 @@
         (if (:debug cli-options)
           (binding [*out* *err*]
             (println "Writing data to" (.toString config-file))))
-        (spit config-file (yaml/generate-string deployed-configuration))))
+        (yaml/write-file config-file deployed-configuration)))
     (cond-> {:opsman_version (get-in info [:info :version])}
             deployed-configuration (assoc :configuration_hash (foundation/hash-of deployed-configuration)))))
 
