@@ -16,19 +16,19 @@
 (s/def ::params (s/keys :req-un [::dry_run]))
 
 (comment (defn- print-diff
-   [deployed-config wanted-config-file]
-   (if deployed-config
-     (let [temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
-           destination (.toString temp-dir)
-           config-file (io/file destination "configuration.yml")]
-       (spit config-file deployed-config)
-       (let [{:keys [exit out err]} (shell/sh "diff"
-                                              (.toString (io/file destination "configuration.yml"))
-                                              (.toString wanted-config-file))]
-         (if (not (= 0 exit))
-           (throw (ex-info "Failed to invoke diff" {:status exit :stdout out :stderr err})))
-         (binding [*out* *err*]
-           (println out)))))))
+           [deployed-config wanted-config-file]
+           (if deployed-config
+             (let [temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
+                   destination (.toString temp-dir)
+                   config-file (io/file destination "configuration.yml")]
+               (spit config-file deployed-config)
+               (let [{:keys [exit out err]} (shell/sh "diff"
+                                                      (.toString (io/file destination "configuration.yml"))
+                                                      (.toString wanted-config-file))]
+                 (if (not (= 0 exit))
+                   (throw (ex-info "Failed to invoke diff" {:status exit :stdout out :stderr err})))
+                 (binding [*out* *err*]
+                   (println out)))))))
 
 (defn out
   [cli-options om payload]
@@ -44,7 +44,7 @@
   ; stop if dry-run param is set
   ; execute the changes in the plan
   ; apply changes
-  )
+)
 
 (s/fdef out
         :args (s/cat :cli-options map?

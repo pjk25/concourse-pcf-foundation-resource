@@ -61,7 +61,7 @@
             (println "Writing data to" (.toString config-file))))
         (yaml/write-file config-file deployed-configuration)))
     (cond-> {:opsman_version (get-in info [:info :version])}
-            deployed-configuration (assoc :configuration_hash (foundation/hash-of deployed-configuration)))))
+      deployed-configuration (assoc :configuration_hash (foundation/hash-of deployed-configuration)))))
 
 (s/fdef current-version
         :args (s/cat :cli-options map?

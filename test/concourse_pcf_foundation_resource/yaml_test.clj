@@ -11,14 +11,14 @@
 
   (testing "Reading a sample string"
     (is (= (keys (yaml/read-str (slurp "resources/fixtures/staged-director-config.yml")))
-           '("az-configuration"
-             "network-assignment"
-             "networks-configuration"
-             "properties-configuration"
-             "resource-configuration"
-             "vmextensions-configuration"))))
+           '(:az-configuration
+             :network-assignment
+             :networks-configuration
+             :properties-configuration
+             :resource-configuration
+             :vmextensions-configuration))))
 
   (testing "Using core.match on the results"
     (is (= (match [(yaml/read-str (slurp "resources/fixtures/staged-director-config.yml"))]
-                  [{"az-configuration" az-config}] (count az-config))
+             [{:az-configuration az-config}] (count az-config))
            3))))
