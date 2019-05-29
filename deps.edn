@@ -1,4 +1,5 @@
-{:deps {org.clojure/tools.cli {:mvn/version "0.4.2"}
+{:deps {org.clojure/clojure {:mvn/version "1.10.0"}
+        org.clojure/tools.cli {:mvn/version "0.4.2"}
         org.clojure/data.json {:mvn/version "0.2.6"}
         org.clojure/core.match {:mvn/version "0.3.0"}
         clj-commons/clj-yaml {:mvn/version "0.7.0"}}
@@ -9,15 +10,8 @@
                   :main-opts ["-m" "cognitect.test-runner"]}
            :user {:extra-paths ["user"]
                   :extra-deps {org.clojure/tools.namespace {:mvn/version "0.3.0-alpha4"}}}
-           :native-image {:main-opts ["-m clj.native-image concourse-pcf-foundation-resource.cli"
-                                      "--initialize-at-build-time"
-                                      "-H:Name=concourse-pcf-foundation-resource"
-                                      "--static"
-                                      "--no-fallback"]
-                          :jvm-opts ["-Dclojure.compiler.direct-linking=true"]
-                          :extra-deps {clj.native-image
-                                       {:git/url "https://github.com/taylorwood/clj.native-image.git"
-                                        :sha "567176ddb0f7507c8b0969e0a10f60f848afaf7d"}}}
+           :uberjar {:extra-deps {luchiniatwork/cambada {:mvn/version "1.0.0"}}
+                     :main-opts ["-m" "cambada.uberjar"]}
            :lint {:extra-deps {com.jameslaverack/cljfmt-runner
                                {:git/url "https://github.com/JamesLaverack/cljfmt-runner"
                                 :sha "97960e9a6464935534b5a6bab529e063d0027128"}}

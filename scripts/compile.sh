@@ -2,4 +2,4 @@
 
 set -euxo pipefail
 
-clojure -A:native-image
+clojure -A:uberjar

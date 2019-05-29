@@ -1,10 +1,6 @@
-FROM oracle/graalvm-ce:19.0.0 AS BASE
+FROM clojure:tools-deps AS BASE
 
-RUN gu install native-image
-
-RUN curl -O https://download.clojure.org/install/linux-install-1.10.0.442.sh
-RUN chmod +x linux-install-1.10.0.442.sh
-RUN ./linux-install-1.10.0.442.sh
+WORKDIR /concourse-pcf-foundation-resource
 
 RUN curl -LO https://github.com/pivotal-cf/om/releases/download/1.0.0/om-linux
 
@@ -14,18 +10,16 @@ ADD resources resources
 ADD test test
 ADD deps.edn .
 
-RUN ./scripts/test.sh
+# RUN ./scripts/test.sh
 RUN ./scripts/compile.sh
 
-FROM alpine
+FROM openjdk:11-jre-slim
 
-RUN apk add --update ca-certificates
-
-COPY --from=BASE /om-linux /usr/local/bin/om
-COPY --from=BASE /concourse-pcf-foundation-resource /usr/local/bin
+COPY --from=BASE /concourse-pcf-foundation-resource/om-linux /usr/local/bin/om
+COPY --from=BASE /concourse-pcf-foundation-resource/target/concourse-pcf-foundation-resource-1.0.0-SNAPSHOT-standalone.jar /
 
 RUN chmod +x /usr/local/bin/om
 
 ADD opt-resource /opt/resource
 
-CMD ["concourse-pcf-foundation-resource"]
+CMD ["/opt/resource/run"]

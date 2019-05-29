@@ -2,4 +2,6 @@
 
 set -e
 
-concourse-pcf-foundation-resource check "$@"
+java -cp /concourse-pcf-foundation-resource-1.0.0-SNAPSHOT-standalone.jar \
+    clojure.main -m concourse-pcf-foundation-resource.cli \
+    check "$@"

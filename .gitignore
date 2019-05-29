@@ -1,2 +1,7 @@
 /.cpcache/
 *.example.yml
+pom.xml
+/target/
+/.classpath
+/.project
+/.settings/
