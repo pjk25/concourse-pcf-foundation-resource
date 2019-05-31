@@ -1,6 +1,5 @@
 (ns concourse-pcf-foundation-resource.core
   (:require [clojure.data.json :as json]
-            [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
             [clojure.pprint :refer [pprint]]
             [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
@@ -55,25 +54,6 @@
         :args (s/cat :cli-options map?
                      :om ::om-cli/om)
         :ret ::foundation/config)
-
-(defn current-version!
-  [cli-options om destination]
-  (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
-        deployed-configuration (deployed-configuration cli-options om)]
-    (if deployed-configuration
-      (let [config-file (io/file destination "configuration.yml")]
-        (if (:debug cli-options)
-          (binding [*out* *err*]
-            (println "Writing data to" (.toString config-file))))
-        (spit config-file (yaml/generate-string deployed-configuration))))
-    (cond-> {:opsman_version (get-in info [:info :version])}
-      deployed-configuration (assoc :configuration_hash (foundation/hash-of deployed-configuration)))))
-
-(s/fdef current-version
-        :args (s/cat :cli-options map?
-                     :om ::om-cli/om
-                     :destination string?)
-        :ret ::version)
 
 (s/def ::plan map?)
 

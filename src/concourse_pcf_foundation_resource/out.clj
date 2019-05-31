@@ -25,9 +25,10 @@
     (if-let [plan (core/plan deployed-configuration desired-configuration)]
       (do
         (core/apply-plan cli-options om plan)
-        (let [temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
-              destination (.toString temp-dir)
-              current-version (core/current-version! cli-options om destination)]
+        (let [deployed-configuration (deployed-configuration cli-options om)
+              info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
+              current-version (cond-> {:opsman_version (get-in info [:info :version])}
+                                deployed-configuration (assoc :configuration_hash (foundation/hash-of deployed-configuration)))]
           {:version current-version :metadata []}))
       (throw (ex-info "Cannot formulate a suitable plan that converges towards the desired foundation state" {}))))
 
