@@ -15,28 +15,22 @@
 
 (s/def ::params (s/keys :req-un [::dry_run]))
 
-(comment (defn- print-diff
-   [deployed-config wanted-config-file]
-   (if deployed-config
-     (let [temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
-           destination (.toString temp-dir)
-           config-file (io/file destination "configuration.yml")]
-       (spit config-file deployed-config)
-       (let [{:keys [exit out err]} (shell/sh "diff"
-                                              (.toString (io/file destination "configuration.yml"))
-                                              (.toString wanted-config-file))]
-         (if (not (= 0 exit))
-           (throw (ex-info "Failed to invoke diff" {:status exit :stdout out :stderr err})))
-         (binding [*out* *err*]
-           (println out)))))))
-
 (defn out
   [cli-options om payload]
-  (let [deployed-configuration (core/deployed-configuration cli-options om)]
+  (let [deployed-configuration (core/deployed-configuration cli-options om)
+        desired-configuration (yaml/parse-string (slurp (io/file (:source cli-options) "configuration.yml")))]
 
-    (foundation/print-diff deployed-configuration (yaml/parse-string (slurp (io/file (:source cli-options) "configuration.yml"))))
+    (foundation/print-diff deployed-configuration desired-configuration)
 
-    (throw (ex-info "Don't know how to converge upon the desired state." {})))
+    (if-let [plan (core/plan deployed-configuration desired-configuration)]
+      (do
+        (core/apply-plan cli-options om plan)
+        (let [temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
+              destination (.toString temp-dir)
+              current-version (core/current-version! cli-options om destination)]
+          {:version current-version :metadata []}))
+      (throw (ex-info "Cannot formulate a suitable plan that converges towards the desired foundation state" {}))))
+
   ; retrieve the current version/config
   ; diff with requested config (foundation.yml)
   ; print the diff
@@ -44,7 +38,7 @@
   ; stop if dry-run param is set
   ; execute the changes in the plan
   ; apply changes
-  )
+)
 
 (s/fdef out
         :args (s/cat :cli-options map?

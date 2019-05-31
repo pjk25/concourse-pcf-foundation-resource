@@ -2,6 +2,7 @@
   (:require [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.spec.alpha :as s]
+            [clojure.pprint :refer [pprint]]
             [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.digest :as digest]
@@ -50,6 +51,11 @@
           (changes-pending? pending-changes-result) (throw (ex-info "Changes are pending" {}))
           :else (yaml/parse-string (om-cli/staged-director-config om)))))))
 
+(s/fdef deployed-configuration
+        :args (s/cat :cli-options map?
+                     :om ::om-cli/om)
+        :ret ::foundation/config)
+
 (defn current-version!
   [cli-options om destination]
   (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
@@ -61,10 +67,34 @@
             (println "Writing data to" (.toString config-file))))
         (spit config-file (yaml/generate-string deployed-configuration))))
     (cond-> {:opsman_version (get-in info [:info :version])}
-            deployed-configuration (assoc :configuration_hash (foundation/hash-of deployed-configuration)))))
+      deployed-configuration (assoc :configuration_hash (foundation/hash-of deployed-configuration)))))
 
 (s/fdef current-version
         :args (s/cat :cli-options map?
                      :om ::om-cli/om
                      :destination string?)
         :ret ::version)
+
+(s/def ::plan map?)
+
+(defn plan
+  [deployed-config desired-config]
+  nil)
+
+(s/fdef plan
+        :args (s/cat :deployed-config ::foundation/config
+                     :desired-config ::foundation/config)
+        :ret ::plan)
+
+(defn apply-plan
+  [cli-options om plan]
+  (binding [*out* *err*]
+    (println "Applying the following plan:")
+    (pprint plan))
+  (throw (ex-info "Failed to apply plan" {:plan plan})))
+
+(s/fdef apply-plan
+        :args (s/cat :cli-options map?
+                     :om ::om-cli/om
+                     :plan ::plan)
+        :ret nil?)

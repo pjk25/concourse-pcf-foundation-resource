@@ -10,23 +10,39 @@
 
 (defn print-diff
   "Print a simplified diff of the configurations to *err*"
-  [current-config desired-config]
+  [deployed-config desired-config]
   (binding [*out* *err*]
     (println "Currently deployed configuration:")
-    (pprint current-config)
+    (pprint deployed-config)
     (println)
     (println "Desired configuration:")
     (pprint desired-config)
     (println)
     (println "Changes required:")
-    (match [current-config desired-config]
-           [{:director-config _} {:director-config _}] (if (not (= current-config desired-config)) (println "\tDirector configuration update"))
-           [_                    {:director-config _}] (println "\tDeploy director")
-           [{:director-config _} _                   ] (println "\tDestroy director"))))
+    (match [deployed-config desired-config]
+      [{:director-config _} {:director-config _}] (if (not (= deployed-config desired-config)) (println "\tDirector configuration update"))
+      [_                    {:director-config _}] (println "\tDeploy director")
+      [{:director-config _} _] (println "\tDestroy director"))))
 
 (s/fdef print-diff
-        :args (s/cat :current-config ::config :desired-config ::config)
+        :args (s/cat :deployed-config ::config :desired-config ::config)
         :ret nil?)
+
+; the yaml
+; ---
+; director:
+;   version: ""
+;   config: {}
+; products:
+;   cf:
+;     version: (read-only)
+;     tile-path: (write-only)
+;     tile-sha: (read-only? (if we can give it))
+;     config: {}
+
+;; should be able to write the "plan" definition out to disk-
+;; Maybe this should actually be 2 resources, then the put that
+;; applys the plan?
 
 (defn hash-of
   [config]
