@@ -1,7 +1,6 @@
 (ns concourse-pcf-foundation-resource.core
   (:require [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
-            [clojure.pprint :refer [pprint]]
             [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.digest :as digest]
@@ -13,7 +12,7 @@
 
 (s/def ::configuration_hash string?)
 
-(s/def ::version (s/keys :req-un [::opsman_version ::configuration_hash]))
+(s/def ::version (s/keys :req-un [::opsman_version] :opt-un [::configuration_hash]))
 
 (s/def ::name string?)
 
@@ -55,7 +54,9 @@
                      :om ::om-cli/om)
         :ret ::foundation/config)
 
-(s/def ::plan map?)
+(s/def ::step map?)
+
+(s/def ::plan (s/* ::step))
 
 (defn plan
   [deployed-config desired-config]
@@ -68,9 +69,6 @@
 
 (defn apply-plan
   [cli-options om plan]
-  (binding [*out* *err*]
-    (println "Applying the following plan:")
-    (pprint plan))
   (throw (ex-info "Failed to apply plan" {:plan plan})))
 
 (s/fdef apply-plan

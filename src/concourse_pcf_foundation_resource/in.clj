@@ -17,7 +17,7 @@
                           deployed-config (assoc :configuration_hash (foundation/hash-of deployed-config)))]
     (if (= current-version requested-version)
       (do
-        (let [config-file (io/file (:destination payload) "configuration.yml")]
+        (let [config-file (io/file (:destination cli-options) "configuration.yml")]
           (if (:debug cli-options)
             (binding [*out* *err*]
               (println "Writing data to" (.toString config-file))))

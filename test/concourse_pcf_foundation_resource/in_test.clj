@@ -15,21 +15,19 @@
       (slurp "resources/fixtures/staged-director-config.yml"))
     (curl [this path]
       (condp = path
-                                        ; "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
-                                        ; "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
-                                        ; "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
+        "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
+        "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
+        "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
         (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path}))))))
 
 (deftest in
   (stest/instrument `in/in)
 
-  (testing "with a valid version"
+  (testing "with a fresh opsman with authentication already set up"
     (let [temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
           destination (.toString temp-dir)]
-      (is (= (in/in {:destination destination} fake-om {:version {:opsman_version "2.5.4-build.189"
-                                                                  :configuration_hash "some-hash"}})
-             {:version {:opsman_version "2.5.4-build.189"
-                        :configuration_hash "some-hash"}
+      (is (= (in/in {:destination destination} fake-om {:version {:opsman_version "2.5.4-build.189"}})
+             {:version {:opsman_version "2.5.4-build.189"}
               :metadata []}))))
 
   (testing "when the version does not exist"

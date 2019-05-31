@@ -3,6 +3,7 @@
             [clojure.spec.alpha :as s]
             [clojure.java.io :as io]
             [clojure.java.shell :as shell]
+            [clojure.pprint :refer [pprint]]
             [concourse-pcf-foundation-resource.core :as core]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
@@ -24,12 +25,21 @@
 
     (if-let [plan (core/plan deployed-configuration desired-configuration)]
       (do
-        (core/apply-plan cli-options om plan)
-        (let [deployed-configuration (deployed-configuration cli-options om)
-              info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
-              current-version (cond-> {:opsman_version (get-in info [:info :version])}
-                                deployed-configuration (assoc :configuration_hash (foundation/hash-of deployed-configuration)))]
-          {:version current-version :metadata []}))
+        (binding [*out* *err*]
+          (println "Computed plan:")
+          (pprint plan))
+        (if (empty? plan)
+          (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
+                current-version (cond-> {:opsman_version (get-in info [:info :version])}
+                                        deployed-configuration (assoc :configuration_hash (foundation/hash-of deployed-configuration)))]
+            {:version current-version :metadata []})
+          (do
+            (core/apply-plan cli-options om plan)
+            (let [deployed-configuration (core/deployed-configuration cli-options om)
+                  info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
+                  current-version (cond-> {:opsman_version (get-in info [:info :version])}
+                                          deployed-configuration (assoc :configuration_hash (foundation/hash-of deployed-configuration)))]
+              {:version current-version :metadata []}))))
       (throw (ex-info "Cannot formulate a suitable plan that converges towards the desired foundation state" {}))))
 
   ; retrieve the current version/config
@@ -44,5 +54,5 @@
 (s/fdef out
         :args (s/cat :cli-options map?
                      :om ::om-cli/om
-                     :payload (s/keys :req-un [::params]))
+                     :payload (s/keys :opt-un [::params]))
         :ret (s/keys :req-un [::core/version ::core/metadata]))
