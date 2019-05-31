@@ -54,6 +54,18 @@
                      :om ::om-cli/om)
         :ret ::foundation/config)
 
+(defn current-version
+  [om deployed-config]
+  (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)]
+    (cond-> {:opsman_version (get-in info [:info :version])}
+            deployed-config (assoc :configuration_hash
+                              (foundation/hash-of deployed-config)))))
+
+(s/fdef current-version
+        :args (s/cat :om ::om-cli/om
+                     :deployed-config ::foundation/config)
+        :ret ::version)
+
 (s/def ::step map?)
 
 (s/def ::plan (s/* ::step))

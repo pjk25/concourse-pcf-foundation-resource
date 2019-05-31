@@ -29,16 +29,12 @@
           (println "Computed plan:")
           (pprint plan))
         (if (empty? plan)
-          (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
-                current-version (cond-> {:opsman_version (get-in info [:info :version])}
-                                        deployed-configuration (assoc :configuration_hash (foundation/hash-of deployed-configuration)))]
+          (let [current-version (core/current-version om deployed-configuration)]
             {:version current-version :metadata []})
           (do
             (core/apply-plan cli-options om plan)
             (let [deployed-configuration (core/deployed-configuration cli-options om)
-                  info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
-                  current-version (cond-> {:opsman_version (get-in info [:info :version])}
-                                          deployed-configuration (assoc :configuration_hash (foundation/hash-of deployed-configuration)))]
+                  current-version (core/current-version om deployed-configuration)]
               {:version current-version :metadata []}))))
       (throw (ex-info "Cannot formulate a suitable plan that converges towards the desired foundation state" {}))))
 

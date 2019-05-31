@@ -12,9 +12,7 @@
   [cli-options om payload]
   (let [requested-version (:version payload)
         deployed-config (core/deployed-configuration cli-options om)
-        info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
-        current-version (cond-> {:opsman_version (get-in info [:info :version])}
-                          deployed-config (assoc :configuration_hash (foundation/hash-of deployed-config)))]
+        current-version (core/current-version om deployed-config)]
     (if (= current-version requested-version)
       (do
         (let [config-file (io/file (:destination cli-options) "configuration.yml")]

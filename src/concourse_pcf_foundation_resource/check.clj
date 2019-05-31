@@ -9,10 +9,8 @@
 
 (defn check
   [cli-options om payload]
-  (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
-        deployed-config (core/deployed-configuration cli-options om)
-        current-version (cond-> {:opsman_version (get-in info [:info :version])}
-                          deployed-config (assoc :configuration_hash (foundation/hash-of deployed-config)))]
+  (let [deployed-config (core/deployed-configuration cli-options om)
+        current-version (core/current-version om deployed-config)]
     [current-version]))
 
 (s/fdef check
