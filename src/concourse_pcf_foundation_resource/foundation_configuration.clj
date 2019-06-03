@@ -5,7 +5,7 @@
 
 (s/def ::director-config map?)
 
-(s/def ::config (s/or :config (s/keys :req-un [::director-config])
+(s/def ::config (s/or :config (s/keys :opt-un [::director-config])
                       :none nil?))
 
 (defn print-diff
@@ -17,28 +17,22 @@
     (println)
     (println "Desired configuration:")
     (pprint desired-config)
-    (println)
-    (println "Changes required:")
-    (match [deployed-config desired-config]
-      [{:director-config _} {:director-config _}] (if (not (= deployed-config desired-config)) (println "\tDirector configuration update"))
-      [_                    {:director-config _}] (println "\tDeploy director")
-      [{:director-config _} _] (println "\tDestroy director"))))
+    (println)))
 
 (s/fdef print-diff
-        :args (s/cat :deployed-config ::config :desired-config ::config)
+        :args (s/cat :deployed-config ::config
+                     :desired-config ::config)
         :ret nil?)
 
 ; the yaml
 ; ---
-; director:
-;   version: ""
-;   config: {}
+; director-config: {}
 ; products:
-;   cf:
-;     version: (read-only)
-;     tile-path: (write-only)
-;     tile-sha: (read-only? (if we can give it))
-;     config: {}
+; - id: cf
+;   version: (read-only)
+;   tile-path: (write-only)
+;   tile-sha: (read-only? (if we can give it))
+;   config: {}
 
 ;; should be able to write the "plan" definition out to disk-
 ;; Maybe this should actually be 2 resources, then the put that

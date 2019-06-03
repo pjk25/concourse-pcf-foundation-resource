@@ -1,9 +1,11 @@
 (ns concourse-pcf-foundation-resource.core
-  (:require [clojure.data.json :as json]
+  (:require [clojure.core.match :refer [match]]
+            [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
             [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.digest :as digest]
+            [concourse-pcf-foundation-resource.plan :as plan]
             [clj-yaml.core :as yaml])
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
@@ -66,22 +68,10 @@
                      :deployed-config ::foundation/config)
         :ret ::version)
 
-(s/def ::step map?)
-
-(s/def ::plan (s/* ::step))
-
-(defn plan
-  [deployed-config desired-config]
-  nil)
-
-(s/fdef plan
-        :args (s/cat :deployed-config ::foundation/config
-                     :desired-config ::foundation/config)
-        :ret ::plan)
-
 (defn apply-plan
   [cli-options om plan]
-  (throw (ex-info "Failed to apply plan" {:plan plan})))
+  (doseq [step plan]
+    (-> (plan/executor step) (cli-options om))))
 
 (s/fdef apply-plan
         :args (s/cat :cli-options map?

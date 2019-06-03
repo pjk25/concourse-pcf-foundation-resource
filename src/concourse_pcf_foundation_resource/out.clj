@@ -8,6 +8,7 @@
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.digest :as digest]
+            [concourse-pcf-foundation-resource.plan :as plan]
             [clj-yaml.core :as yaml])
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
@@ -23,16 +24,16 @@
 
     (foundation/print-diff deployed-configuration desired-configuration)
 
-    (if-let [plan (core/plan deployed-configuration desired-configuration)]
+    (if-let [the-plan (plan/plan deployed-configuration desired-configuration)]
       (do
         (binding [*out* *err*]
           (println "Computed plan:")
-          (pprint plan))
-        (if (empty? plan)
+          (pprint the-plan))
+        (if (or (empty? the-plan) (get-in payload [:params :dry_run]))
           (let [current-version (core/current-version om deployed-configuration)]
             {:version current-version :metadata []})
           (do
-            (core/apply-plan cli-options om plan)
+            (core/apply-plan cli-options om the-plan)
             (let [deployed-configuration (core/deployed-configuration cli-options om)
                   current-version (core/current-version om deployed-configuration)]
               {:version current-version :metadata []}))))
