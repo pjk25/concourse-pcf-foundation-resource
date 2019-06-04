@@ -1,6 +1,10 @@
 (ns concourse-pcf-foundation-resource.om-cli
   (:require [clojure.spec.alpha :as s]
-            [clojure.java.shell :as shell]))
+            [clojure.java.io :as io]
+            [clojure.java.shell :as shell]
+            [clj-yaml.core :as yaml])
+  (:import [java.nio.file Files]
+           [java.nio.file.attribute FileAttribute]))
 
 (s/def ::url string?)
 
@@ -15,26 +19,38 @@
 
 (defprotocol Om
   (staged-director-config [this])
-  (curl [this path]))
+  (curl [this path])
+  (configure-director [this config]))
 
 (s/def ::om #(satisfies? Om %))
 
 (defn- sh-om
-  [opsmgr & args]
+  [cli-options opsmgr & args]
   (let [{:keys [url username password]} opsmgr
         base-args (cond-> ["om" "--target" url "--username" username "--password" password]
                     (:skip_ssl_validation opsmgr) (conj "--skip-ssl-validation"))]
+    (if (:debug cli-options)
+      (binding [*out* *err*]
+        (println "Invoking om with" args)))
     (apply shell/sh (concat base-args args))))
 
-(deftype OmCli [opsmgr]
+(deftype OmCli [cli-options opsmgr]
   Om
   (staged-director-config [this]
-    (let [{:keys [exit out err]} (sh-om opsmgr "staged-director-config")]
+    (let [{:keys [exit out err]} (sh-om cli-options opsmgr "staged-director-config")]
       (if (= 0 exit)
         out
         (throw (ex-info err {})))))
   (curl [this path]
-    (let [{:keys [exit out err]} (sh-om opsmgr "curl" "--silent" "--path" path)]
+    (let [{:keys [exit out err]} (sh-om cli-options opsmgr "curl" "--silent" "--path" path)]
       (if (= 0 exit)
         out
-        (throw (ex-info err {:path path}))))))
+        (throw (ex-info err {:path path})))))
+  (configure-director [this config]
+    (let [destination (.toString (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute [])))
+          config-file (io/file destination "director-config.yml")]
+      (spit config-file (yaml/generate-string config))
+      (let [{:keys [exit out err]} (sh-om cli-options opsmgr "configure-director" "--config" (.toString config-file))]
+        (if (= 0 exit)
+          out
+          (throw (ex-info err {})))))))

@@ -19,8 +19,14 @@
 
 (defn out
   [cli-options om payload]
-  (let [deployed-configuration (core/deployed-configuration cli-options om)
-        desired-configuration (yaml/parse-string (slurp (io/file (:source cli-options) "configuration.yml")))]
+  (let [deployed-configuration (foundation/select-writable-config (core/deployed-configuration cli-options om))
+        desired-configuration (foundation/select-writable-config (yaml/parse-string (slurp (io/file (:source cli-options) "configuration.yml"))))]
+
+    (when-not (s/valid? ::foundation/config desired-configuration)
+      (binding [*out* *err*]
+        (println "The supplied foundation configuration is not valid")
+        (s/explain ::foundation/config desired-configuration))
+      (throw (ex-info "The supplied foundation configuration is not valid" {})))
 
     (foundation/print-diff deployed-configuration desired-configuration)
 

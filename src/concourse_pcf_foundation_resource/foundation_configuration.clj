@@ -1,7 +1,8 @@
 (ns concourse-pcf-foundation-resource.foundation-configuration
   (:require [clojure.core.match :refer [match]]
             [clojure.spec.alpha :as s]
-            [clojure.pprint :refer [pprint]]))
+            [clojure.pprint :refer [pprint]]
+            [concourse-pcf-foundation-resource.util :as util]))
 
 (s/def ::director-config map?)
 
@@ -23,6 +24,15 @@
         :args (s/cat :deployed-config ::config
                      :desired-config ::config)
         :ret nil?)
+
+(defn select-writable-config
+  "drop keys not known to ::config spec"
+  [config]
+  (util/only-specd ::config config))
+
+(s/fdef select-writable-config
+        :args (s/cat :config ::config)
+        :ret ::config)
 
 ; the yaml
 ; ---

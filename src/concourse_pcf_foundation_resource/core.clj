@@ -71,7 +71,10 @@
 (defn apply-plan
   [cli-options om plan]
   (doseq [step plan]
-    (-> (plan/executor step) (cli-options om))))
+    (if (:debug cli-options)
+      (binding [*out* *err*]
+        (println "Performing" (::plan/action step))))
+    ((plan/executor step) cli-options om)))
 
 (s/fdef apply-plan
         :args (s/cat :cli-options map?

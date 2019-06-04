@@ -35,8 +35,9 @@
 
 (defmulti executor ::action)
 
-(defmethod executor :configure-director [_]
-  (throw (ex-info "Don't know how to configure director" {})))
+(defmethod executor :configure-director [step]
+  (fn [cli-options om]
+    (om-cli/configure-director om (::config step))))
 
 (defmethod executor :apply-changes [_]
   (throw (ex-info "Don't know how to apply changes" {})))

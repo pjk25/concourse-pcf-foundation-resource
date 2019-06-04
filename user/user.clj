@@ -1,5 +1,6 @@
 (ns user
-  (:require [clojure.test :refer [run-tests run-all-tests]]))
+  (:require [clojure.spec.alpha :as s]
+            [clojure.test :refer [run-tests run-all-tests]]))
 
 (require '[clojure.tools.namespace.repl :refer [refresh set-refresh-dirs]])
 
