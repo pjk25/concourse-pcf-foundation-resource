@@ -46,16 +46,7 @@
               (let [redeployed-config (core/deployed-configuration cli-options om)
                     current-version (core/current-version om redeployed-config)]
                 {:version current-version :metadata []}))))
-        (throw (ex-info "Cannot formulate a suitable plan that converges towards the desired foundation state" {})))))
-
-  ; retrieve the current version/config
-  ; diff with requested config (foundation.yml)
-  ; print the diff
-  ; print plan
-  ; stop if dry-run param is set
-  ; execute the changes in the plan
-  ; apply changes
-)
+        (throw (ex-info "Cannot formulate a suitable plan that converges towards the desired foundation state" {}))))))
 
 (s/fdef out
         :args (s/cat :cli-options map?

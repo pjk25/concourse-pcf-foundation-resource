@@ -29,6 +29,13 @@
       (:status)
       (= "running")))
 
+(defn- last-apply-changes-failed?
+  [parsed-installations-response]
+  (-> parsed-installations-response
+      (first)
+      (:status)
+      (= "failed")))
+
 (defn- changes-pending?
   [parsed-pending-changes-response]
   (seq parsed-pending-changes-response)) ; idiomatic form of (not (empty? x))
@@ -43,13 +50,14 @@
 (defn deployed-configuration
   [cli-options om]
   (let [installations (json/read-str (om-cli/curl om "/api/v0/installations") :key-fn keyword)]
-    (if (changes-being-applied? installations)
-      (throw (ex-info "Changes are currently being applied" {}))
-      (let [pending-changes-result (json/read-str (om-cli/curl om "/api/v0/staged/pending_changes") :key-fn keyword)]
-        (cond
-          (fresh-opsman? pending-changes-result) nil
-          (changes-pending? pending-changes-result) (throw (ex-info "Changes are pending" {}))
-          :else (yaml/parse-string (om-cli/staged-director-config om)))))))
+    (cond
+     (changes-being-applied? installations) (throw (ex-info "Changes are currently being applied" {}))
+     (last-apply-changes-failed? installations) (throw (ex-info "The last Apply Changes failed" {}))
+     :else (let [pending-changes-result (json/read-str (om-cli/curl om "/api/v0/staged/pending_changes") :key-fn keyword)]
+             (cond
+              (fresh-opsman? pending-changes-result) nil
+              (changes-pending? pending-changes-result) (throw (ex-info "Changes are pending" {}))
+              :else (yaml/parse-string (om-cli/staged-director-config om)))))))
 
 (s/fdef deployed-configuration
         :args (s/cat :cli-options map?
