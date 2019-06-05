@@ -1,6 +1,7 @@
 (ns concourse-pcf-foundation-resource.plan
   (:require [clojure.core.match :refer [match]]
             [clojure.spec.alpha :as s]
+            [clojure.string :as string]
             [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.om-cli :as om-cli])
   (:import [java.nio.file Files]
@@ -47,3 +48,19 @@
         :ret (s/fspec :args (s/cat :cli-options map?
                                    :om ::om-cli-om)
                       :ret nil?))
+
+(defmulti description ::action)
+
+(defmethod description :configure-director [step]
+  (str (::action step) " - " "Configure the director tile"))
+
+(defmethod description :apply-changes [step]
+  (str (::action step) " - " "Apply Changes"))
+
+(defn describe-plan
+  [p]
+  (string/join "\n" (map #(format "  %d. %s" (inc %2) (description %1)) p (range))))
+
+(s/fdef describe-plan
+        :args (s/cat :plan ::plan)
+        :ret string?)

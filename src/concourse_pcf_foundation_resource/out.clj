@@ -19,31 +19,34 @@
 
 (defn out
   [cli-options om payload]
-  (let [deployed-configuration (foundation/select-writable-config (core/deployed-configuration cli-options om))
-        desired-configuration (foundation/select-writable-config (yaml/parse-string (slurp (io/file (:source cli-options) "configuration.yml"))))]
+  (let [deployed-configuration (core/deployed-configuration cli-options om)
+        desired-configuration (yaml/parse-string (slurp (io/file (:source cli-options) "configuration.yml")))]
 
     (when-not (s/valid? ::foundation/config desired-configuration)
       (binding [*out* *err*]
         (println "The supplied foundation configuration is not valid")
-        (s/explain ::foundation/config desired-configuration))
+        (s/explain ::foundation/config desired-configuration)
+        (println))
       (throw (ex-info "The supplied foundation configuration is not valid" {})))
 
-    (foundation/print-diff deployed-configuration desired-configuration)
+    (let [deployed-config (foundation/select-writable-config deployed-configuration)
+          desired-config (foundation/select-writable-config desired-configuration)]
+      (foundation/print-diff deployed-config desired-config)
 
-    (if-let [the-plan (plan/plan deployed-configuration desired-configuration)]
-      (do
-        (binding [*out* *err*]
-          (println "Computed plan:")
-          (pprint the-plan))
-        (if (or (empty? the-plan) (get-in payload [:params :dry_run]))
-          (let [current-version (core/current-version om deployed-configuration)]
-            {:version current-version :metadata []})
-          (do
-            (core/apply-plan cli-options om the-plan)
-            (let [deployed-configuration (core/deployed-configuration cli-options om)
-                  current-version (core/current-version om deployed-configuration)]
-              {:version current-version :metadata []}))))
-      (throw (ex-info "Cannot formulate a suitable plan that converges towards the desired foundation state" {}))))
+      (if-let [the-plan (plan/plan deployed-config desired-config)]
+        (do
+          (binding [*out* *err*]
+            (println "Computed plan:")
+            (println (plan/describe-plan the-plan) "\n"))
+          (if (or (empty? the-plan) (get-in payload [:params :dry_run]))
+            (let [current-version (core/current-version om deployed-config)]
+              {:version current-version :metadata []})
+            (do
+              (core/apply-plan cli-options om the-plan)
+              (let [redeployed-config (core/deployed-configuration cli-options om)
+                    current-version (core/current-version om redeployed-config)]
+                {:version current-version :metadata []}))))
+        (throw (ex-info "Cannot formulate a suitable plan that converges towards the desired foundation state" {})))))
 
   ; retrieve the current version/config
   ; diff with requested config (foundation.yml)

@@ -4,7 +4,38 @@
             [clojure.pprint :refer [pprint]]
             [concourse-pcf-foundation-resource.util :as util]))
 
-(s/def ::director-config map?)
+(s/def ::name string?)
+
+(s/def ::az-configuration (s/coll-of (s/keys :req-un [::name])))
+
+(s/def ::network-assignment map?)
+
+(s/def ::networks-configuration map?)
+
+(s/def ::director_configuration map?)
+
+(s/def ::security_configuration map?)
+
+(s/def ::syslog_configuration map?)
+
+(s/def ::iaas_configuration map?)
+
+(s/def ::properties-configuration (s/keys :opt-un [::director_configuration
+                                                   ::security_configuration
+                                                   ::syslog_configuration
+                                                   ::iaas_configuration]))
+
+(s/def ::resource-configuration map?)
+
+(s/def ::vmextensions-configuration (s/coll-of map?))
+
+; https://github.com/pivotal-cf/om/blob/master/docs/configure-director/README.md
+(s/def ::director-config (s/keys :opt-un [::az-configuration
+                                          ::network-assignment
+                                          ::networks-configuration
+                                          ::properties-configuration
+                                          ::resource-configuration
+                                          ::vmextensions-configuration]))
 
 (s/def ::config (s/or :config (s/keys :opt-un [::director-config])
                       :none nil?))
