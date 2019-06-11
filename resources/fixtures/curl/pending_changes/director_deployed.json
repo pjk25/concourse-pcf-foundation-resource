@@ -1,0 +1,38 @@
+{
+    "product_changes": [
+      {
+        "guid": "p-bosh-2af2748f64d632549f02",
+        "action": "unchanged",
+        "errands": [],
+        "staged": {
+          "guid": "p-bosh-2af2748f64d632549f02",
+          "identifier": "p-bosh",
+          "label": "BOSH Director",
+          "version": "2.5.4-build.189",
+          "depends_on": [],
+          "stemcell_version": "250.48"
+        },
+        "deployed": {
+          "guid": "p-bosh-2af2748f64d632549f02",
+          "identifier": "p-bosh",
+          "label": "BOSH Director",
+          "version": "2.5.4-build.189",
+          "depends_on": [],
+          "stemcell_version": "250.48"
+        },
+        "last_successful_deployed": {
+          "guid": "p-bosh-2af2748f64d632549f02",
+          "identifier": "p-bosh",
+          "label": "BOSH Director",
+          "version": "2.5.4-build.189",
+          "depends_on": [],
+          "stemcell_version": "250.48"
+        },
+        "completeness_checks": {
+          "configuration_complete": true,
+          "stemcell_present": true,
+          "configurable_properties_valid": true
+        }
+      }
+    ]
+  }

@@ -36,9 +36,13 @@
       (:status)
       (= "failed")))
 
-(defn- changes-pending?
+(defn changes-pending?
   [parsed-pending-changes-response]
-  (seq parsed-pending-changes-response)) ; idiomatic form of (not (empty? x))
+  false)
+
+(s/fdef changes-pending?
+        :args (s/cat :parsed-pending-changes-response map?)
+        :ret boolean?)
 
 (defn- fresh-opsman?
   [parsed-pending-changes-response]
