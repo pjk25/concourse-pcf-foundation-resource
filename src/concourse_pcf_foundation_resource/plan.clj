@@ -40,8 +40,9 @@
   (fn [cli-options om]
     (om-cli/configure-director om (::config step))))
 
-(defmethod executor :apply-changes [_]
-  (throw (ex-info "Don't know how to apply changes" {})))
+(defmethod executor :apply-changes [step]
+  (fn [cli-options om]
+    (om-cli/apply-changes om (::options step))))
 
 (s/fdef executor
         :args (s/cat :step ::step)

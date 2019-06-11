@@ -29,7 +29,6 @@
 
 (s/def ::vmextensions-configuration (s/coll-of map?))
 
-; https://github.com/pivotal-cf/om/blob/master/docs/configure-director/README.md
 (s/def ::director-config (s/keys :opt-un [::az-configuration
                                           ::network-assignment
                                           ::networks-configuration
