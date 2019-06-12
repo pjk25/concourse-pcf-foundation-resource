@@ -61,7 +61,7 @@
              (cond
               (fresh-opsman? pending-changes-result) nil
               (changes-pending? pending-changes-result) (throw (ex-info "Changes are pending" {}))
-              :else (yaml/parse-string (om-cli/staged-director-config om)))))))
+              :else {:director-config (yaml/parse-string (om-cli/staged-director-config om))})))))
 
 (s/fdef deployed-configuration
         :args (s/cat :cli-options map?
@@ -73,7 +73,7 @@
   (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)]
     (cond-> {:opsman_version (get-in info [:info :version])}
             deployed-config (assoc :configuration_hash
-                              (foundation/hash-of deployed-config)))))
+                              (format "%x" (hash deployed-config))))))
 
 (s/fdef current-version
         :args (s/cat :om ::om-cli/om

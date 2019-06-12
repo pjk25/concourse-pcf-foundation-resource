@@ -77,11 +77,3 @@
 ;; should be able to write the "plan" definition out to disk-
 ;; Maybe this should actually be 2 resources, then the put that
 ;; applys the plan?
-
-(defn hash-of
-  [config]
-  "fake-hash")
-
-(s/fdef hash-of
-        :args (s/cat :config ::config)
-        :ret string?)
