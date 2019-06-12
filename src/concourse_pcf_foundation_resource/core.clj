@@ -86,10 +86,10 @@
     (if (:debug cli-options)
       (binding [*out* *err*]
         (println "Performing" (::plan/action step))))
-    (doseq [line ((plan/executor step) cli-options om)]
+    (let [result ((plan/executor step) cli-options om)]
       (if (:debug cli-options)
         (binding [*out* *err*]
-          (println line))))))
+          (println result))))))
 
 (s/fdef apply-plan
         :args (s/cat :cli-options map?

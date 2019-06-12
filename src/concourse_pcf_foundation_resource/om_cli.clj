@@ -2,7 +2,8 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.java.io :as io]
             [clj-yaml.core :as yaml]
-            [me.raynes.conch :as sh])
+            [me.raynes.conch :as sh]
+            [me.raynes.conch.low-level :as sh-ll])
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
@@ -36,6 +37,21 @@
     (sh/with-programs [om]
       (apply om (concat base-args args)))))
 
+(defn- sh-om-side-stream-results
+  [cli-options opsmgr & args]
+  (let [{:keys [url username password]} opsmgr
+        base-args (cond-> ["--target" url "--username" username "--password" password]
+                    (:skip_ssl_validation opsmgr) (conj "--skip-ssl-validation"))]
+    (if (:debug cli-options)
+      (binding [*out* *err*]
+        (println "Invoking om with" args)))
+    (let [p (apply sh-ll/proc "om" (concat base-args args))]
+      (future (binding [*out* *err*] (sh-ll/stream-to-out p :out)))
+      (let [status @(future (sh-ll/exit-code p))]
+        (condp = status
+          0 "om invocation completed successfully."
+          (throw (ex-info "om invocation failed" {:code status :args args})))))))
+
 (deftype OmCli [cli-options opsmgr]
   Om
   (staged-director-config [this]
@@ -49,10 +65,10 @@
                           (.toString)
                           (io/file "director-config.yml"))]
       (spit config-file (yaml/generate-string config))
-      (sh-om cli-options opsmgr "configure-director" "--config" (.toString config-file) {:seq true})))
+      (sh-om-side-stream-results cli-options opsmgr "configure-director" "--config" (.toString config-file))))
 
   (apply-changes [this options]
-    (apply sh-om cli-options opsmgr "apply-changes" (concat options [{:seq true}]))))
+    (apply sh-om-side-stream-results cli-options opsmgr "apply-changes" options)))
 
 (s/fdef staged-director-config
         :args (s/cat :this ::om)
@@ -66,9 +82,9 @@
 (s/fdef configure-director
         :args (s/cat :this ::om
                      :config map?)
-        :ret (s/* string?))
+        :ret string?)
 
 (s/fdef apply-changes
         :args (s/cat :this ::om
                      :options (s/* string?))
-        :ret (s/* string?))
+        :ret string?)
