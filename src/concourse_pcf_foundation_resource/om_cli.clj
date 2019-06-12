@@ -46,10 +46,11 @@
       (binding [*out* *err*]
         (println "Invoking om with" args)))
     (let [p (apply sh-ll/proc "om" (concat base-args args))]
-      (future (binding [*out* *err*] (sh-ll/stream-to-out p :out)))
-      (let [status @(future (sh-ll/exit-code p))]
+      (binding [*out* *err*]
+        (sh-ll/stream-to-out p :out))
+      (let [status (sh-ll/exit-code p)]
         (condp = status
-          0 "om invocation completed successfully."
+          0 "\nom invocation completed successfully."
           (throw (ex-info "om invocation failed" {:code status :args args})))))))
 
 (deftype OmCli [cli-options opsmgr]
