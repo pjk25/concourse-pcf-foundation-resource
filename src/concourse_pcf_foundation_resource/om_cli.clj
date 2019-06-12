@@ -46,8 +46,9 @@
       (binding [*out* *err*]
         (println "Invoking om with" args)))
     (let [p (apply sh-ll/proc "om" (concat base-args args))]
-      (binding [*out* *err*]
-        (sh-ll/stream-to-out p :out))
+      (if (:debug cli-options)
+        (binding [*out* *err*]
+          (sh-ll/stream-to-out p :out)))
       (let [status (sh-ll/exit-code p)]
         (condp = status
           0 "\nom invocation completed successfully."
