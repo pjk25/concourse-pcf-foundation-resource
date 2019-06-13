@@ -26,8 +26,10 @@
   (testing "with a fresh opsman with authentication already set up"
     (let [temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
           destination (.toString temp-dir)]
-      (is (= (in/in {:destination destination} fake-om {:version {:opsman_version "2.5.4-build.189"}})
-             {:version {:opsman_version "2.5.4-build.189"}
+      (is (= (in/in {:destination destination} fake-om {:version {:opsman_version "2.5.4-build.189"
+                                                                  :configuration_hash "ff19274a"}})
+             {:version {:opsman_version "2.5.4-build.189"
+                        :configuration_hash "ff19274a"}
               :metadata []}))))
 
   (testing "when the version does not exist"

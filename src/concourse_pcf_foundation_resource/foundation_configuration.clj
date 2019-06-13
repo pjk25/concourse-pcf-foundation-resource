@@ -36,8 +36,7 @@
                                           ::resource-configuration
                                           ::vmextensions-configuration]))
 
-(s/def ::config (s/or :config (s/keys :opt-un [::director-config])
-                      :none nil?))
+(s/def ::config (s/keys :opt-un [::director-config]))
 
 (defn print-diff
   "Print a simplified diff of the configurations to *err*"
