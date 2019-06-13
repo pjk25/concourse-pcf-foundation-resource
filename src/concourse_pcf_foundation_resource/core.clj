@@ -6,6 +6,7 @@
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.digest :as digest]
             [concourse-pcf-foundation-resource.plan :as plan]
+            [concourse-pcf-foundation-resource.query.pending-changes :as pending-changes]
             [clj-yaml.core :as yaml])
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
@@ -36,21 +37,6 @@
       (:status)
       (= "failed")))
 
-(defn changes-pending?
-  [parsed-pending-changes-response]
-  false)
-
-(s/fdef changes-pending?
-        :args (s/cat :parsed-pending-changes-response map?)
-        :ret boolean?)
-
-(defn- fresh-opsman?
-  [parsed-pending-changes-response]
-  (let [{:keys [product_changes]} parsed-pending-changes-response]
-    (and (= 1 (count product_changes))
-         (= "install" (:action (first product_changes)))
-         (= "p-bosh" (:identifier (:staged (first product_changes)))))))
-
 (defn deployed-configuration
   [cli-options om]
   (let [installations (json/read-str (om-cli/curl om "/api/v0/installations") :key-fn keyword)]
@@ -59,8 +45,8 @@
      (last-apply-changes-failed? installations) (throw (ex-info "The last Apply Changes failed" {}))
      :else (let [pending-changes-result (json/read-str (om-cli/curl om "/api/v0/staged/pending_changes") :key-fn keyword)]
              (cond
-              (fresh-opsman? pending-changes-result) nil
-              (changes-pending? pending-changes-result) (throw (ex-info "Changes are pending" {}))
+              (pending-changes/fresh-opsman? pending-changes-result) nil
+              (pending-changes/changes-pending? pending-changes-result) (throw (ex-info "Changes are pending" {}))
               :else {:director-config (yaml/parse-string (om-cli/staged-director-config om))})))))
 
 (s/fdef deployed-configuration

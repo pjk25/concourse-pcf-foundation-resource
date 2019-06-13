@@ -9,13 +9,6 @@
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
-(deftest changes-pending?
-  (stest/instrument `core/changes-pending?)
-
-  (testing "when the director has been finished installing/deploying and nothing else is queued"
-    (is (not (core/changes-pending? (json/read-str (slurp "resources/fixtures/curl/pending_changes/director_deployed.json")
-                                                   :key-fn keyword))))))
-
 (comment (deftest current-version
            (stest/instrument `core/current-version)
 
