@@ -4,20 +4,13 @@
             [clojure.data.json :as json]
             [concourse-pcf-foundation-resource.query.pending-changes :as pending-changes]))
 
-(deftest changes-pending?
-  (stest/instrument `pending-changes/changes-pending?)
-
-  (testing "when the director has been finished installing/deploying and nothing else is queued"
-    (is (not (pending-changes/changes-pending? (json/read-str (slurp "resources/fixtures/curl/pending_changes/director_deployed.json")
-                                                              :key-fn keyword))))))
-
-(deftest fresh-opsman?
-  (stest/instrument `pending-changes/fresh-opsman?)
+(deftest interpret
+  (stest/instrument `pending-changes/interpret)
 
   (testing "when opsman is configured with auth, but nothing has been deployed"
-    (is (pending-changes/fresh-opsman? (json/read-str (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
-                                                      :key-fn keyword))))
+    (is (= :fresh-opsman (pending-changes/interpret (json/read-str (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
+                                                                   :key-fn keyword)))))
 
-  (testing "when director has been deployed"
-    (is (not (pending-changes/fresh-opsman? (json/read-str (slurp "resources/fixtures/curl/pending_changes/director_deployed.json")
-                                                           :key-fn keyword))))))
+  (testing "when the director has been finished installing/deploying and nothing else is queued"
+    (is (= :no (pending-changes/interpret (json/read-str (slurp "resources/fixtures/curl/pending_changes/director_deployed.json")
+                                                         :key-fn keyword))))))

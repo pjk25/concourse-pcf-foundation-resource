@@ -44,10 +44,10 @@
      (changes-being-applied? installations) (throw (ex-info "Changes are currently being applied" {}))
      (last-apply-changes-failed? installations) (throw (ex-info "The last Apply Changes failed" {}))
      :else (let [pending-changes-result (json/read-str (om-cli/curl om "/api/v0/staged/pending_changes") :key-fn keyword)]
-             (cond
-              (pending-changes/fresh-opsman? pending-changes-result) nil
-              (pending-changes/changes-pending? pending-changes-result) (throw (ex-info "Changes are pending" {}))
-              :else {:director-config (yaml/parse-string (om-cli/staged-director-config om))})))))
+             (match [(pending-changes/interpret pending-changes-result)]
+                    [:fresh-opsman] nil
+                    [:yes] (throw (ex-info "Changes are pending" {}))
+                    [:no] {:director-config (yaml/parse-string (om-cli/staged-director-config om))})))))
 
 (s/fdef deployed-configuration
         :args (s/cat :cli-options map?
