@@ -16,4 +16,8 @@
 
   (testing "when opsman is configured with auth, but nothing has been deployed"
     (is (pending-changes/fresh-opsman? (json/read-str (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
-                                                      :key-fn keyword)))))
+                                                      :key-fn keyword))))
+
+  (testing "when director has been deployed"
+    (is (not (pending-changes/fresh-opsman? (json/read-str (slurp "resources/fixtures/curl/pending_changes/director_deployed.json")
+                                                           :key-fn keyword))))))
