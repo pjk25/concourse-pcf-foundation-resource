@@ -8,7 +8,7 @@
 
 (s/def ::baz int?)
 
-(s/def ::bar (s/coll-of (s/keys :opt [::baz])))
+(s/def ::bar (s/coll-of (s/keys :opt [::baz]) :distinct true))
 
 (s/def ::a-map (s/keys :req [::foo] :opt-un [::bar]))
 

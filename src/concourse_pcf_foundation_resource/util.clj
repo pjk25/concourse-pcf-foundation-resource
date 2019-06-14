@@ -18,7 +18,7 @@
                                                      %1))
                                                 {}
                                                 (concat req-un opt-un))))
-           [(['coll-of i] :seq)] (mapv #(only-specd i %) x)
+           [(['coll-of i & _] :seq)] (mapv #(only-specd i %) x)
            :else x)))
 
 (s/fdef only-specd

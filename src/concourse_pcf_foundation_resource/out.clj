@@ -32,7 +32,7 @@
           (println "Internal inconsistency: The deployed foundation configuration is not valid")
           (s/explain ::foundation/config raw-deployed-config)
           (println))
-        (throw (ex-info "The supplied foundation configuration is not valid" {})))
+        (throw (ex-info "Internal inconsistency: The deployed foundation configuration is not valid" {})))
 
       (when (= ::s/invalid desired-config)
         (binding [*out* *err*]
