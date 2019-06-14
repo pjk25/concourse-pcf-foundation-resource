@@ -9,9 +9,18 @@
 
 (defn check
   [cli-options om payload]
-  (let [deployed-config (core/deployed-configuration cli-options om)
-        current-version (core/current-version om deployed-config)]
-    [current-version]))
+  (let [raw-deployed-config (core/deployed-configuration cli-options om)
+        deployed-config (s/conform ::foundation/config raw-deployed-config)]
+
+    (when (= ::s/invalid deployed-config)
+        (binding [*out* *err*]
+          (println "Internal inconsistency: The deployed foundation configuration is not valid")
+          (s/explain ::foundation/config raw-deployed-config)
+          (println))
+        (throw (ex-info "Internal inconsistency: The deployed foundation configuration is not valid" {})))
+
+    (let [current-version (core/current-version om deployed-config)]
+      [current-version])))
 
 (s/fdef check
         :args (s/cat :cli-options map?

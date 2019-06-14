@@ -47,7 +47,8 @@
              (match [(pending-changes/interpret pending-changes-result)]
                     [:fresh-opsman] {}
                     [:yes] (throw (ex-info "Changes are pending" {}))
-                    [:no] (foundation/select-writable-config {:director-config (yaml/parse-string (om-cli/staged-director-config om))}))))))
+                    [:no] (-> {:director-config (yaml/parse-string (om-cli/staged-director-config om))}
+                              (foundation/select-writable-config)))))))
 
 (s/fdef deployed-configuration
         :args (s/cat :cli-options map?

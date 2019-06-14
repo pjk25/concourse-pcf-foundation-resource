@@ -11,17 +11,26 @@
 (defn in
   [cli-options om payload]
   (let [requested-version (:version payload)
-        deployed-config (core/deployed-configuration cli-options om)
-        current-version (core/current-version om deployed-config)]
-    (if (= current-version requested-version)
-      (do
-        (let [config-file (io/file (:destination cli-options) "configuration.yml")]
-          (if (:debug cli-options)
-            (binding [*out* *err*]
-              (println "Writing data to" (.toString config-file))))
-          (spit config-file (yaml/generate-string deployed-config)))
-        {:version current-version :metadata []})
-      (throw (ex-info "The requested version is no longer available." {:version requested-version})))))
+        raw-deployed-config (core/deployed-configuration cli-options om)
+        deployed-config (s/conform ::foundation/config raw-deployed-config)]
+
+    (when (= ::s/invalid deployed-config)
+        (binding [*out* *err*]
+          (println "Internal inconsistency: The deployed foundation configuration is not valid")
+          (s/explain ::foundation/config raw-deployed-config)
+          (println))
+        (throw (ex-info "Internal inconsistency: The deployed foundation configuration is not valid" {})))
+
+    (let [current-version (core/current-version om deployed-config)]
+      (if (= current-version requested-version)
+        (do
+          (let [config-file (io/file (:destination cli-options) "configuration.yml")]
+            (if (:debug cli-options)
+              (binding [*out* *err*]
+                (println "Writing data to" (.toString config-file))))
+            (spit config-file (yaml/generate-string deployed-config)))
+          {:version current-version :metadata []})
+        (throw (ex-info "The requested version is no longer available." {:version requested-version}))))))
 
 (s/fdef in
         :args (s/cat :cli-options map?

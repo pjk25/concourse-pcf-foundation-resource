@@ -17,4 +17,4 @@
       (is (= [:configure-director :apply-changes] (map ::plan/action (plan/plan {} desired-config))))))
   (testing "when there is nothing to do"
     (let [desired-config (yaml/parse-string (slurp "resources/fixtures/desired-config/configuration.yml") :key-fn keyword)]
-      (is (empty? (plan/plan desired-config desired-config))))))
+      (is (= '() (plan/plan desired-config desired-config))))))

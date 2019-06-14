@@ -7,11 +7,15 @@
   (let [described (if (qualified-keyword? spec) (s/describe spec) spec)]
     (match [described]
            [(['keys & r] :seq)] (let [{:keys [req req-un opt opt-un]} r]
-                                  (into (reduce #(assoc %1 %2 (only-specd %2 (%2 x)))
+                                  (into (reduce #(if (contains? x %2)
+                                                   (assoc %1 %2 (only-specd %2 (%2 x)))
+                                                   %1)
                                                 {}
                                                 (concat req opt))
                                         (reduce #(let [unqualified (keyword (name %2))]
-                                                   (assoc %1 unqualified (only-specd %2 (unqualified x))))
+                                                   (if (contains? x unqualified)
+                                                     (assoc %1 unqualified (only-specd %2 (unqualified x)))
+                                                     %1))
                                                 {}
                                                 (concat req-un opt-un))))
            [(['coll-of i] :seq)] (mapv #(only-specd i %) x)

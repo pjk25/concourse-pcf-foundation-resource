@@ -20,12 +20,20 @@
    {::action :apply-changes
     ::options ["--skip-deploy-products"]}])
 
+(defn- requires-changes?
+  [deployed desired]
+  "This walks the desired config, checking if it differs from what is deployed in a meaningful way"
+  (comment (match [desired]
+                  [(true :<< map?)] "foo"))
+  (not (= deployed desired)))
+
 (defn plan
   [deployed-config desired-config]
-  (let [equal-dc (= (:director-config deployed-config)
-                    (:director-config desired-config))]
-    (match [deployed-config desired-config equal-dc]
-           [{:director-config _} {:director-config _}  _] nil
+  (let [rc (requires-changes? (:director-config deployed-config)
+                              (:director-config desired-config))]
+    (match [deployed-config desired-config rc]
+           [{:director-config _} {:director-config _} false] []
+           [{:director-config _} {:director-config _} true] nil
            [_                    {:director-config dc} _] (deploy-director-plan dc)
            :else nil)))
 

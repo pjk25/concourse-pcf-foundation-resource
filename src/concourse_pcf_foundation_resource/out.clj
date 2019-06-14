@@ -19,36 +19,46 @@
 
 (defn out
   [cli-options om payload]
-  (let [deployed-config (core/deployed-configuration cli-options om)
-        desired-config (yaml/parse-string (slurp (io/file (:source cli-options) "configuration.yml")))]
+  (let [raw-deployed-config (core/deployed-configuration cli-options om)
+        raw-desired-config (yaml/parse-string (slurp (io/file (:source cli-options) "configuration.yml")))]
 
-    (when-not (s/valid? ::foundation/config desired-config)
-      (binding [*out* *err*]
-        (println "The supplied foundation configuration is not valid")
-        (s/explain ::foundation/config desired-config)
-        (println))
-      (throw (ex-info "The supplied foundation configuration is not valid" {})))
+    (foundation/print-diff raw-deployed-config raw-desired-config)
 
-    ; TODO: print the diff when there is extra data
-    (if-not (= desired-config (foundation/select-writable-config desired-config))
-      (throw (ex-info "The supplied foundation configuration contains extraneous data" {})))
+    (let [deployed-config (s/conform ::foundation/config raw-deployed-config)
+          desired-config (s/conform ::foundation/config raw-desired-config)]
 
-    (foundation/print-diff deployed-config desired-config)
-
-    (if-let [the-plan (plan/plan deployed-config desired-config)]
-      (do
+      (when (= ::s/invalid deployed-config)
         (binding [*out* *err*]
-          (println "Computed plan:")
-          (println (plan/describe-plan the-plan) "\n"))
-        (if (or (empty? the-plan) (get-in payload [:params :dry_run]))
-          (let [current-version (core/current-version om deployed-config)]
-            {:version current-version :metadata []})
-          (do
-            (core/apply-plan cli-options om the-plan)
-            (let [redeployed-config (core/deployed-configuration cli-options om)
-                  current-version (core/current-version om redeployed-config)]
-              {:version current-version :metadata []}))))
-      (throw (ex-info "Cannot formulate a suitable plan that converges towards the desired foundation state" {})))))
+          (println "Internal inconsistency: The deployed foundation configuration is not valid")
+          (s/explain ::foundation/config raw-deployed-config)
+          (println))
+        (throw (ex-info "The supplied foundation configuration is not valid" {})))
+
+      (when (= ::s/invalid desired-config)
+        (binding [*out* *err*]
+          (println "The supplied foundation configuration is not valid")
+          (s/explain ::foundation/config raw-desired-config)
+          (println))
+        (throw (ex-info "The supplied foundation configuration is not valid" {})))
+
+      ; TODO: print the diff when there is extra data
+      (if-not (= desired-config (foundation/select-writable-config desired-config))
+        (throw (ex-info "The supplied foundation configuration contains extraneous data" {})))
+
+      (if-let [the-plan (plan/plan deployed-config desired-config)]
+        (do
+          (binding [*out* *err*]
+            (println "Computed plan:")
+            (println (plan/describe-plan the-plan) "\n"))
+          (if (or (empty? the-plan) (get-in payload [:params :dry_run]))
+            (let [current-version (core/current-version om deployed-config)]
+              {:version current-version :metadata []})
+            (do
+              (core/apply-plan cli-options om the-plan)
+              (let [redeployed-config (core/deployed-configuration cli-options om)
+                    current-version (core/current-version om redeployed-config)]
+                {:version current-version :metadata []}))))
+        (throw (ex-info "Cannot formulate a suitable plan that converges towards the desired foundation state" {}))))))
 
 (s/fdef out
         :args (s/cat :cli-options map?

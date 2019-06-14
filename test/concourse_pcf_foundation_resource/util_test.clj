@@ -19,4 +19,8 @@
                                    :bar [{::baz 123 :other 1}]
                                    :extra "extra-val"})
          {::foo "foostr"
-          :bar [{::baz 123}]})))
+          :bar [{::baz 123}]}))
+
+  (is (= (util/only-specd ::a-map {::foo "foostr"
+                                   :extra "extra-val"})
+         {::foo "foostr"})))

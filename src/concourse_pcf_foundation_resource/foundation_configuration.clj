@@ -6,7 +6,7 @@
 
 (s/def ::name string?)
 
-(s/def ::az-configuration (s/coll-of (s/keys :req-un [::name])))
+(s/def ::az-configuration (s/coll-of (s/keys :req-un [::name]) :distinct true :into #{}))
 
 (s/def ::network-assignment map?)
 
