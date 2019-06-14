@@ -24,3 +24,16 @@
   (is (= (util/only-specd ::a-map {::foo "foostr"
                                    :extra "extra-val"})
          {::foo "foostr"})))
+
+(deftest structural-minus
+  (stest/instrument `util/structural-minus)
+
+  (is (= {:a ::util/eluded}
+         (util/structural-minus {:a 1} {})))
+
+  (is (= {:a ::util/eluded}
+         (util/structural-minus {:a 1 :b 2} {:b 2})))
+
+  (is (= {:a ::util/eluded
+          :b {:d ::util/eluded}}
+         (util/structural-minus {:a 1 :b {:c 2 :d 3}} {:b {:c 2}}))))
