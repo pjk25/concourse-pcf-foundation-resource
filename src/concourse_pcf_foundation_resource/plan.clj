@@ -20,14 +20,10 @@
    {::action :apply-changes
     ::options ["--skip-deploy-products"]}])
 
-(defn requires-changes?
-  [deployed desired]
-  (not (= deployed desired)))
-
 (defn plan
   [deployed-config desired-config]
-  (let [drc (requires-changes? (:director-config deployed-config)
-                               (:director-config desired-config))]
+  (let [drc (foundation/requires-changes? (:director-config deployed-config)
+                                          (:director-config desired-config))]
     (match [deployed-config desired-config drc]
            [{:director-config _} {:director-config _} false] []
            [{:director-config _} {:director-config _} true] nil

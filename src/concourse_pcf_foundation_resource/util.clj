@@ -2,7 +2,12 @@
   (:require [clojure.core.match :refer [match]]
             [clojure.spec.alpha :as s]))
 
+(defn- unqualify
+  [symbol]
+  (keyword (name symbol)))
+
 (defn only-specd
+  "return the portion of x described by spec"
   [spec x]
   (let [described (if (qualified-keyword? spec) (s/describe spec) spec)]
     (match [described]
@@ -12,13 +17,13 @@
                                                    %1)
                                                 {}
                                                 (concat req opt))
-                                        (reduce #(let [unqualified (keyword (name %2))]
+                                        (reduce #(let [unqualified (unqualify %2)]
                                                    (if (contains? x unqualified)
                                                      (assoc %1 unqualified (only-specd %2 (unqualified x)))
                                                      %1))
                                                 {}
                                                 (concat req-un opt-un))))
-           [(['coll-of i & _] :seq)] (mapv #(only-specd i %) x)
+           [(['coll-of i & _] :seq)] (map #(only-specd i %) x)
            :else x)))
 
 (s/fdef only-specd
@@ -26,11 +31,49 @@
                      :x any?)
         :ret any?)
 
+(defn- non-empty-collection?
+  [c]
+  (and (or (map? c) (seq? c)) (not (empty? c))))
+
+(defn non-specd
+  "return the remaining structure not described by spec"
+  [spec x]
+  (let [described (if (qualified-keyword? spec) (s/describe spec) spec)]
+    (match [described]
+           [(['keys & r] :seq)] (let [{:keys [req req-un opt opt-un]} r
+                                      expected-keys (concat req opt (map unqualify (concat req-un opt-un)))]
+                                  (merge (apply dissoc x expected-keys)
+                                         (reduce #(if (contains? x %2)
+                                                    (let [c (non-specd %2 (%2 x))]
+                                                      (if (non-empty-collection? c)
+                                                        (assoc %1 %2 c)
+                                                        %1))
+                                                    %1)
+                                                 {}
+                                                 (concat req opt))
+                                         (reduce #(let [unqualified (unqualify %2)]
+                                                    (if (contains? x unqualified)
+                                                      (let [c (non-specd %2 (unqualified x))]
+                                                        (if (non-empty-collection? c)
+                                                          (assoc %1 unqualified c)
+                                                          %1))
+                                                      %1))
+                                                 {}
+                                                 (concat req-un opt-un))))
+           [(['coll-of i & _] :seq)] (map #(non-specd i %) x)
+           :else x)))
+
+(defn select
+  "return the portion of x that matches the structure of structure"
+  [structure x]
+  nil)
+
 (defn- map-values
   [m f]
   (into {} (for [[k v] m] [k (f v)])))
 
 (defn structural-minus
+  "return the portion of a not matching the structure of b"
   [a b]
   (match [a b]
          [{} {}] (merge (let [common-keys (clojure.set/intersection (set (keys a)) (set (keys b)))]

@@ -54,6 +54,14 @@
                      :desired-config ::config)
         :ret nil?)
 
+(defn requires-changes?
+  [deployed desired]
+  (not (= (util/select desired deployed) desired)))
+
+(s/fdef requires-changes?
+        :args (s/cat :deployed any? :desired any?)
+        :ret boolean?)
+
 (defn select-writable-config
   "drop keys not known to ::config spec"
   [config]

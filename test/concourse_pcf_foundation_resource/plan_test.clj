@@ -5,12 +5,6 @@
             [concourse-pcf-foundation-resource.plan :as plan]
             [clj-yaml.core :as yaml]))
 
-(deftest requires-changes?
-  (testing "when what is desired is more precise than what is deployed"
-    (is (plan/requires-changes? {:a 1} {:a 1 :b 2})))
-  (testing "when the desired is less precise than what is deployed"
-    (is (not (plan/requires-changes? {:a 1 :b 2} {:a 1})))))
-
 (deftest plan
   (stest/instrument `plan/plan)
 

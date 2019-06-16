@@ -5,6 +5,16 @@
             [clojure.java.io :as io]
             [concourse-pcf-foundation-resource.foundation-configuration :as foundation]))
 
+(deftest requires-changes?
+  (stest/instrument `foundation/requires-changes?)
+
+  (testing "when what is desired is more precise than what is deployed"
+    (is (foundation/requires-changes? {:a 1} {:a 1 :b 2})))
+
+  (testing "when the desired is less precise than what is deployed"
+    (is (not (foundation/requires-changes? {:a 1 :b 2} {:a 1})))))
+
+
 (deftest select-writable-config
   (is (= {:director-config
           {:az-configuration

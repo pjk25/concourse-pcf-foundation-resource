@@ -25,6 +25,24 @@
                                    :extra "extra-val"})
          {::foo "foostr"})))
 
+(deftest non-specd
+  (stest/instrument `util/non-specd)
+
+  (is (= (util/non-specd ::a-map {::foo 1})
+         {}))
+
+  (is (= (util/non-specd ::a-map {::foo 1 :monkey 2})
+         {:monkey 2}))
+
+  (is (= (util/non-specd ::a-map {::foo 2
+                                  :bar [{::baz 1 :tree 3}]})
+         {:bar [{:tree 3}]})))
+
+(deftest select
+  (stest/instrument `util/select)
+
+  (is false))
+
 (deftest structural-minus
   (stest/instrument `util/structural-minus)
 
