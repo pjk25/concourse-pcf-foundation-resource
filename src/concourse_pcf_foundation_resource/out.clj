@@ -49,18 +49,20 @@
     (foundation/print-diff deployed-config desired-config)
 
     (if-let [the-plan (plan/plan deployed-config desired-config)]
-      (do
-        (binding [*out* *err*]
-          (println "Computed plan:")
-          (println (plan/describe-plan the-plan) "\n"))
-        (if (or (empty? the-plan) (get-in payload [:params :dry_run]))
-          (let [current-version (core/current-version om deployed-config)]
-            {:version current-version :metadata []})
-          (do
-            (core/apply-plan cli-options om the-plan)
-            (let [redeployed-config (core/deployed-configuration cli-options om)
-                  current-version (core/current-version om redeployed-config)]
-              {:version current-version :metadata []}))))
+      (if (or (empty? the-plan) (get-in payload [:params :dry_run]))
+        (do
+          (binding [*out* *err*]
+            (println "No changes required."))
+          {:version (core/current-version om deployed-config)
+           :metadata []})
+        (do
+          (binding [*out* *err*]
+            (println "Computed plan:")
+            (println (plan/describe-plan the-plan) "\n"))
+          (core/apply-plan cli-options om the-plan)
+          (let [redeployed-config (core/deployed-configuration cli-options om)
+                current-version (core/current-version om redeployed-config)]
+            {:version current-version :metadata []})))
       (throw (ex-info "Cannot formulate a suitable plan that converges towards the desired foundation state" {})))))
 
 (s/fdef out
