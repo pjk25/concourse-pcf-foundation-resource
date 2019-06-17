@@ -5,8 +5,8 @@
 (defn interpret
   [parsed-pending-changes-response]
   (match [parsed-pending-changes-response]
-         [{:product_changes [{:action "install" :staged {:identifier "p-bosh"}}]}] :fresh-opsman
-         :else :no))
+    [{:product_changes [{:action "install" :staged {:identifier "p-bosh"}}]}] :fresh-opsman
+    :else :no))
 
 (s/fdef interpret
         :args (s/cat :parsed-pending-changes-response map?)

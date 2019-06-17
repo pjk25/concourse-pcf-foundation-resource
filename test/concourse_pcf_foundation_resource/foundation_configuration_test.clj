@@ -14,7 +14,6 @@
   (testing "when the desired is less precise than what is deployed"
     (is (not (foundation/requires-changes? {:a 1 :b 2} {:a 1})))))
 
-
 (deftest select-writable-config
   (is (= {:director-config
           {:az-configuration

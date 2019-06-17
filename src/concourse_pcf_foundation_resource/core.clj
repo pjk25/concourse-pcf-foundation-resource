@@ -41,14 +41,14 @@
   [cli-options om]
   (let [installations (json/read-str (om-cli/curl om "/api/v0/installations") :key-fn keyword)]
     (cond
-     (changes-being-applied? installations) (throw (ex-info "Changes are currently being applied" {}))
-     (last-apply-changes-failed? installations) (throw (ex-info "The last Apply Changes failed" {}))
-     :else (let [pending-changes-result (json/read-str (om-cli/curl om "/api/v0/staged/pending_changes") :key-fn keyword)]
-             (match [(pending-changes/interpret pending-changes-result)]
-                    [:fresh-opsman] {}
-                    [:yes] (throw (ex-info "Changes are pending" {}))
-                    [:no] (-> {:director-config (yaml/parse-string (om-cli/staged-director-config om))}
-                              (foundation/select-writable-config)))))))
+      (changes-being-applied? installations) (throw (ex-info "Changes are currently being applied" {}))
+      (last-apply-changes-failed? installations) (throw (ex-info "The last Apply Changes failed" {}))
+      :else (let [pending-changes-result (json/read-str (om-cli/curl om "/api/v0/staged/pending_changes") :key-fn keyword)]
+              (match [(pending-changes/interpret pending-changes-result)]
+                [:fresh-opsman] {}
+                [:yes] (throw (ex-info "Changes are pending" {}))
+                [:no] (-> {:director-config (yaml/parse-string (om-cli/staged-director-config om))}
+                          (foundation/select-writable-config)))))))
 
 (s/fdef deployed-configuration
         :args (s/cat :cli-options map?

@@ -25,10 +25,10 @@
   (let [drc (foundation/requires-changes? (:director-config deployed-config)
                                           (:director-config desired-config))]
     (match [deployed-config desired-config drc]
-           [{:director-config _} {:director-config _} false] []
-           [{:director-config _} {:director-config _} true] nil
-           [_                    {:director-config dc} _] (deploy-director-plan dc)
-           :else nil)))
+      [{:director-config _} {:director-config _}  false] []
+      [{:director-config _} {:director-config _}  true]  nil
+      [_                    {:director-config dc} _]     (deploy-director-plan dc)
+      :else nil)))
 
 (s/fdef plan
         :args (s/cat :deployed-config ::foundation/config

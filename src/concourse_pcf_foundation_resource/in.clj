@@ -15,11 +15,11 @@
         deployed-config (s/conform ::foundation/config raw-deployed-config)]
 
     (when (= ::s/invalid deployed-config)
-        (binding [*out* *err*]
-          (println "Internal inconsistency: The deployed foundation configuration is not valid")
-          (s/explain ::foundation/config raw-deployed-config)
-          (println))
-        (throw (ex-info "Internal inconsistency: The deployed foundation configuration is not valid" {})))
+      (binding [*out* *err*]
+        (println "Internal inconsistency: The deployed foundation configuration is not valid")
+        (s/explain ::foundation/config raw-deployed-config)
+        (println))
+      (throw (ex-info "Internal inconsistency: The deployed foundation configuration is not valid" {})))
 
     (let [current-version (core/current-version om deployed-config)]
       (if (= current-version requested-version)

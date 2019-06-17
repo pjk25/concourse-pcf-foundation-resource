@@ -42,7 +42,7 @@
     (let [extra-config (util/structural-minus desired-config (foundation/select-writable-config desired-config))]
       (when-not (empty? extra-config)
         (binding [*out* *err*]
-          (println "The supplied foundation configuration contains extraneous data")
+          (println "The supplied foundation configuration contains extraneous data:")
           (pprint extra-config))
         (throw (ex-info "The supplied foundation configuration contains extraneous data" {}))))
 
