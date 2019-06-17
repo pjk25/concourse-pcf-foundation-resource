@@ -10,3 +10,8 @@
   []
   (refresh)
   (run-all-tests #"concourse-pcf-foundation-resource.*-test"))
+
+(defn run-some-tests
+  [selector]
+  (refresh)
+  (run-all-tests (re-pattern (str "concourse-pcf-foundation-resource." selector "-test"))))

@@ -33,7 +33,7 @@
 
 (defn- non-empty-collection?
   [c]
-  (and (or (map? c) (seq? c)) (not (empty? c))))
+  (and (or (map? c) (seq? c)) (seq c)))
 
 (defn non-specd
   "return the remaining structure not described by spec"
@@ -66,7 +66,12 @@
 (defn select
   "return the portion of x that matches the structure of structure"
   [structure x]
-  nil)
+  (match [structure x]
+         [(true :<< map?) (true :<< map?)] (reduce-kv #(assoc %1 %2 (select %3 (%2 x)))
+                                                      {}
+                                                      structure)
+         [(true :<< seq?) (true :<< seq?)] (map (partial select (first structure)) x)
+         :else x))
 
 (defn- map-values
   [m f]

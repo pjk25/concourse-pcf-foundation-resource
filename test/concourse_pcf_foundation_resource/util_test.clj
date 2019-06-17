@@ -41,7 +41,13 @@
 (deftest select
   (stest/instrument `util/select)
 
-  (is false))
+  (is (= (util/select {:a {:b "any"}}
+                      {:a {:b 1}})
+         {:a {:b 1}}))
+
+  (is (= (util/select {:b {:c [{:d "any"}]}}
+                      {:a 1 :b {:c [{:d 2} {:d 3}]}})
+         {:b {:c [{:d 2}, {:d 3}]}})))
 
 (deftest structural-minus
   (stest/instrument `util/structural-minus)
