@@ -37,6 +37,14 @@
       (:status)
       (= "failed")))
 
+(defn- fixup-staged-director-config
+  "Map the shape of the response from 'om staged-director-config' to that of 'om configure-director'"
+  [config]
+  (-> config
+      (assoc-in [:properties-configuration :iaas_configuration]
+                (first (:iaas-configurations config)))
+      (dissoc :iaas-configurations)))
+
 (defn deployed-configuration
   [cli-options om]
   (let [installations (json/read-str (om-cli/curl om "/api/v0/installations") :key-fn keyword)]
@@ -47,7 +55,7 @@
               (match [(pending-changes/interpret pending-changes-result)]
                 [:fresh-opsman] {}
                 [:yes] (throw (ex-info "Changes are pending" {}))
-                [:no] (-> {:director-config (yaml/parse-string (om-cli/staged-director-config om))}
+                [:no] (-> {:director-config (fixup-staged-director-config (yaml/parse-string (om-cli/staged-director-config om)))}
                           (foundation/select-writable-config)))))))
 
 (s/fdef deployed-configuration

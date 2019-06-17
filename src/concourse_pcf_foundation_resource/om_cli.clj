@@ -57,7 +57,7 @@
 (deftype OmCli [cli-options opsmgr]
   Om
   (staged-director-config [this]
-    (sh-om cli-options opsmgr "staged-director-config"))
+    (sh-om cli-options opsmgr "staged-director-config" "--no-redact"))
 
   (curl [this path]
     (sh-om cli-options opsmgr "curl" "--silent" "--path" path))
