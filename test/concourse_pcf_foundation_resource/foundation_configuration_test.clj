@@ -12,7 +12,12 @@
     (is (foundation/requires-changes? {:a 1} {:a 1 :b 2})))
 
   (testing "when the desired is less precise than what is deployed"
-    (is (not (foundation/requires-changes? {:a 1 :b 2} {:a 1})))))
+    (is (not (foundation/requires-changes? {:a 1 :b 2} {:a 1}))))
+
+  (testing "responds reasonably for nil args"
+    (is (foundation/requires-changes? nil 1))
+    (is (foundation/requires-changes? 1 nil))
+    (is (not (foundation/requires-changes? nil nil)))))
 
 (deftest select-writable-config
   (is (= {:director-config

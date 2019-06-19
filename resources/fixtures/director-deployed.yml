@@ -66,5 +66,3 @@ director-config:
       backend_service:
         name: internal-httpslb
         scheme: INTERNAL
-products:
-  - product-name: foo

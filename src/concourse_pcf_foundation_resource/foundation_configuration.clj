@@ -36,7 +36,22 @@
                                           ::resource-configuration
                                           ::vmextensions-configuration]))
 
-(s/def ::config (s/keys :opt-un [::director-config]))
+(s/def ::product-name string?)
+
+(s/def ::product-properties map?)
+
+(s/def ::network-properties map?)
+
+(s/def ::resource-config map?)
+
+(s/def ::errand-config map?)
+
+(s/def ::product-config (s/keys :req-un [::product-name]
+                                :opt-un [::product-properties ::network-properties ::resource-config ::errand-config]))
+
+(s/def ::products (s/coll-of ::product-config :distinct true :into #{}))
+
+(s/def ::config (s/keys :opt-un [::director-config ::products]))
 
 (defn- first-difference
   ([l r] (first-difference l r []))
