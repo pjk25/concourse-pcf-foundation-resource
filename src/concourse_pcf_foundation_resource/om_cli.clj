@@ -22,6 +22,7 @@
   (staged-director-config [this])
   (curl [this path])
   (configure-director [this config])
+  (configure-product [this config])
   (apply-changes [this options]))
 
 (s/def ::om #(satisfies? Om %))
@@ -69,6 +70,13 @@
       (spit config-file (yaml/generate-string config))
       (sh-om-side-stream-results cli-options opsmgr "configure-director" "--config" (.toString config-file))))
 
+  (configure-product [this config]
+    (let [config-file (-> (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
+                          (.toString)
+                          (io/file "product-config.yml"))]
+      (spit config-file (yaml/generate-string config))
+      (sh-om-side-stream-results cli-options opsmgr "configure-product" "--config" (.toString config-file))))
+
   (apply-changes [this options]
     (apply sh-om-side-stream-results cli-options opsmgr "apply-changes" options)))
 
@@ -82,6 +90,11 @@
         :ret string?)
 
 (s/fdef configure-director
+        :args (s/cat :this ::om
+                     :config map?)
+        :ret string?)
+
+(s/fdef configure-product
         :args (s/cat :this ::om
                      :config map?)
         :ret string?)

@@ -7,7 +7,7 @@
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
-(s/def ::action #{:configure-director :apply-changes})
+(s/def ::action #{:configure-director :configure-product :apply-changes})
 
 (s/def ::step (s/keys :req [::action]))
 
@@ -31,21 +31,30 @@
   [name products]
   (first (filter #(= name (:product-name %)) products)))
 
-(defn- replacing-product-with-name
-  [name deployed-config desired-config]
-  (let [product-index (first (keep-indexed #(if (= name (:product-name %2)) %1) (:products deployed-config)))]
-    (assoc-in deployed-config [:products product-index] (find-product-with-name name (:products desired-config)))))
+(defmulti virtual-apply-step (fn [step deployed-config] (::action step)))
 
-(comment (defn- virtual-apply-plan
-           [plan deployed-config]
-           nil))
+(defmethod virtual-apply-step :configure-director [step deployed-config]
+  (assoc deployed-config :director-config (::config step)))
+
+(defmethod virtual-apply-step :configure-product [step deployed-config]
+  (let [name (:product-name (::config step))
+        product-index (first (keep-indexed #(if (= name (:product-name %2)) %1) (:products deployed-config)))]
+    (assoc-in deployed-config [:products product-index] (::config step))))
+
+(defmethod virtual-apply-step :apply-changes [step deployed-config]
+  deployed-config)
+
+(defn- virtual-apply-plan
+  [plan deployed-config]
+  ;; this could be made more complex where staged changes are modeled, and applying moves them over to "deployed"
+  (reduce #(virtual-apply-step %2 %1) deployed-config plan))
 
 (defn- plans
   [deployed-config desired-config]
   (lazy-seq
    (if (foundation/requires-changes? (:director-config deployed-config) (:director-config desired-config))
-     (cons (deploy-director-plan (:director-config desired-config))
-           (plans (assoc deployed-config :director-config (:director-config desired-config)) desired-config))
+     (let [ddp (deploy-director-plan (:director-config desired-config))]
+       (cons ddp (plans (virtual-apply-plan ddp deployed-config) desired-config)))
      (let [deployed-products (:products deployed-config)
            desired-products (:products desired-config)
            sorted-product-names (sort (distinct (map :product-name desired-products))) ; only what's desired - no support for delete yet
@@ -56,8 +65,8 @@
            has-delta? (fn [{:keys [deployed desired]}]
                         (if desired (foundation/requires-changes? deployed desired)))]
        (if-let [{:keys [name deployed desired]} (first (filter has-delta? product-config-pairs))]
-         (cons (deploy-product-plan desired)
-               (plans (replacing-product-with-name name deployed desired) desired-config))
+         (let [dpp (deploy-product-plan desired)]
+           (cons dpp (plans (virtual-apply-plan dpp deployed-config) desired-config)))
          (list []))))))
 
 ; The plan is valid if after it is applied, all versions satisfy the versioning contstraints
@@ -70,7 +79,6 @@
 
 (defn plan
   [deployed-config desired-config]
-  ;; if the count of take 1000 plans = 1000, it appears we cannot converge, so we should bail, even before we filter the valid plans
   (first (filter valid-plan? (plans deployed-config desired-config))))
 
 (s/fdef plan
@@ -78,11 +86,16 @@
                      :desired-config ::foundation/config)
         :ret ::plan)
 
+; TODO: make this multiple arity like virtual-apply-plan
 (defmulti executor ::action)
 
 (defmethod executor :configure-director [step]
   (fn [cli-options om]
     (om-cli/configure-director om (::config step))))
+
+(defmethod executor :configure-product [step]
+  (fn [cli-options om]
+    (om-cli/configure-product om (::config step))))
 
 (defmethod executor :apply-changes [step]
   (fn [cli-options om]
@@ -98,6 +111,9 @@
 
 (defmethod description :configure-director [step]
   (str (::action step) " - " "Configure the director tile"))
+
+(defmethod description :configure-product [step]
+  (str (::action step) "-" "Configure" (:product-name (::config step))))
 
 (defmethod description :apply-changes [step]
   (str (::action step) " - " "Apply Changes"))
