@@ -79,7 +79,7 @@
 
 (defn plan
   [deployed-config desired-config]
-  (first (filter valid-plan? (plans deployed-config desired-config))))
+  (first (filter valid-plan? (take 1000 (plans deployed-config desired-config)))))
 
 (s/fdef plan
         :args (s/cat :deployed-config ::foundation/config

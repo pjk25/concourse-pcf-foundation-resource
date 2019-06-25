@@ -1,0 +1,12 @@
+[
+  {
+    "installation_name": "component-type1-installation-name",
+    "guid": "component-type1-guid",
+    "type": "component-type1"
+  },
+  {
+    "installation_name": "p-bosh-installation-name",
+    "guid": "p-bosh-guid",
+    "type": "p-bosh"
+  }
+]

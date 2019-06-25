@@ -45,6 +45,17 @@
                 (first (:iaas-configurations config)))
       (dissoc :iaas-configurations)))
 
+(defn- deployed-config
+  [cli-options om]
+  ; this will need to take into account the staged products and staged-config for each
+  ; om curl -p /api/v0/staged/products NOT om staged-products (can't control the output formal)
+  (let [staged-products (json/read-str (om-cli/curl om "/api/v0/staged/products") :key-fn keyword)
+        products []
+        director-config (fixup-staged-director-config (yaml/parse-string (om-cli/staged-director-config om)))
+        full-config (cond-> {:director-config director-config}
+                            (seq products) (assoc :products products))]
+    (foundation/select-writable-config full-config)))
+
 (defn deployed-configuration
   [cli-options om]
   (let [installations (json/read-str (om-cli/curl om "/api/v0/installations") :key-fn keyword)]
@@ -55,8 +66,7 @@
               (match [(pending-changes/interpret pending-changes-result)]
                 [:fresh-opsman] {}
                 [:yes] (throw (ex-info "Changes are pending" {}))
-                [:no] (-> {:director-config (fixup-staged-director-config (yaml/parse-string (om-cli/staged-director-config om)))}
-                          (foundation/select-writable-config)))))))
+                [:no] (deployed-config cli-options om))))))
 
 (s/fdef deployed-configuration
         :args (s/cat :cli-options map?
