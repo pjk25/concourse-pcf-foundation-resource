@@ -53,7 +53,7 @@
         products []
         director-config (fixup-staged-director-config (yaml/parse-string (om-cli/staged-director-config om)))
         full-config (cond-> {:director-config director-config}
-                            (seq products) (assoc :products products))]
+                      (seq products) (assoc :products products))]
     (foundation/select-writable-config full-config)))
 
 (defn deployed-configuration

@@ -22,6 +22,7 @@
   (staged-director-config [this])
   (curl [this path])
   (configure-director [this config])
+  (stage-product [this config])
   (configure-product [this config])
   (apply-changes [this options]))
 
@@ -70,6 +71,9 @@
       (spit config-file (yaml/generate-string config))
       (sh-om-side-stream-results cli-options opsmgr "configure-director" "--config" (.toString config-file))))
 
+  (stage-product [this config]
+    (sh-om cli-options opsmgr "stage-product" "--product-name" (:product-name config) "--product-version" (:product-version config)))
+
   (configure-product [this config]
     (let [config-file (-> (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
                           (.toString)
@@ -92,6 +96,15 @@
 (s/fdef configure-director
         :args (s/cat :this ::om
                      :config map?)
+        :ret string?)
+
+(s/def ::product-name string?)
+
+(s/def ::product-version string?)
+
+(s/fdef stage-product
+        :args (s/cat :this ::om
+                     :config (s/keys :req-un [::product-name ::product-version]))
         :ret string?)
 
 (s/fdef configure-product

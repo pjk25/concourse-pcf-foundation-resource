@@ -7,7 +7,7 @@
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
-(s/def ::action #{:configure-director :configure-product :apply-changes})
+(s/def ::action #{:configure-director :stage-product :configure-product :apply-changes})
 
 (s/def ::step (s/keys :req [::action]))
 
@@ -22,7 +22,10 @@
 
 (defn- deploy-product-plan
   [desired-product-config]
-  [{::action :configure-product
+  [;; a first step of uploading the product is probably necessary (om upload-product)
+   {::action :stage-product
+    ::config desired-product-config}
+   {::action :configure-product
     ::config desired-product-config}
    {::action :apply-changes
     ::options ["--product-name" (:product-name desired-product-config)]}])
@@ -35,6 +38,9 @@
 
 (defmethod virtual-apply-step :configure-director [step deployed-config]
   (assoc deployed-config :director-config (::config step)))
+
+(defmethod virtual-apply-step :stage-product [step deployed-config]
+  deployed-config)
 
 (defmethod virtual-apply-step :configure-product [step deployed-config]
   (let [name (:product-name (::config step))
@@ -111,6 +117,9 @@
 
 (defmethod description :configure-director [step]
   (str (::action step) " - " "Configure the director tile"))
+
+(defmethod description :stage-product [step]
+  (str (::action step) "-" "Stage" (:product-name (::config step)) (:version ())))
 
 (defmethod description :configure-product [step]
   (str (::action step) "-" "Configure" (:product-name (::config step))))
