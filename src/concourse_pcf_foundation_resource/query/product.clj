@@ -8,8 +8,11 @@
 
 (defn state
   [om product-config]
-  (let [deployed-products (json/read-str (om-cli/deployed-products om))]
-    nil))
+  (let [deployed-products (json/read-str (om-cli/deployed-products om) :key-fn keyword)]
+    (cond (some #(and (= (:name %) (:product-name product-config))
+                      (= (:version %) (:version product-config)))
+                (map #(select-keys % [:name :version]) deployed-products)) :deployed
+          :else :none)))
 
 (s/fdef state
   :args (s/cat :om ::om-cli/om

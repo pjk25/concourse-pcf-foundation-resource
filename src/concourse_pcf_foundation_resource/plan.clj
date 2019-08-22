@@ -27,17 +27,23 @@
 
 (defn- deploy-product-plan
   [om desired-product-config]
-  (let [product-state (product/state om desired-product-config)]
-    (cond-> [{::action :configure-product
+  (let [configure-product-step {::action :configure-product
+                                ::config desired-product-config}
+        apply-changes-step {::action :apply-changes
+                            ::options ["--product-name" (:product-name desired-product-config)]}]
+    (condp = (product/state om desired-product-config)
+      :none [{::action :upload-product
               ::config desired-product-config}
-             {::action :apply-changes
-              ::options ["--product-name" (:product-name desired-product-config)]}]
-      (= :uploaded product-state) (concat [{::action :stage-product
-                                            ::config desired-product-config}])
-      (= :none product-state) (concat [{::action :upload-product
-                                        ::config desired-product-config}
-                                       {::action :stage-product
-                                        ::config desired-product-config}]))))
+             {::action :stage-product
+              ::config desired-product-config}
+             configure-product-step
+             apply-changes-step]
+      :uploaded [{::action :stage-product
+                  ::config desired-product-config}
+                 configure-product-step
+                 apply-changes-step]
+      [configure-product-step
+       apply-changes-step])))
 
 (defn- find-product-with-name
   [name products]
@@ -47,6 +53,9 @@
 
 (defmethod virtual-apply-step :configure-director [step deployed-config]
   (assoc deployed-config :director-config (::config step)))
+
+(defmethod virtual-apply-step :upload-product [step deployed-config]
+  deployed-config)
 
 (defmethod virtual-apply-step :stage-product [step deployed-config]
   deployed-config)

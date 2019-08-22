@@ -12,14 +12,15 @@
 
   (testing "deploying the director"
     (let [fake-om (reify om-cli/Om
-                             (staged-director-config [this]
-                               (slurp "resources/fixtures/staged-director-config.yml"))
-                             (curl [this path]
-                               (condp = path
-                                 "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
-                                 "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
-                                 "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
-                                 (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))
+                    (staged-director-config [this]
+                      (slurp "resources/fixtures/staged-director-config.yml"))
+                    (deployed-products [this] "[]")
+                    (curl [this path]
+                      (condp = path
+                        "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
+                        "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
+                        "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
+                        (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))
           desired-config (yaml/parse-string (slurp "resources/fixtures/desired-config/configuration.yml") :key-fn keyword)]
       (is (s/valid? ::plan/plan (plan/plan fake-om {} desired-config)))
       (is (= [:configure-director :apply-changes] (map ::plan/action (plan/plan fake-om {} desired-config))))))
@@ -28,6 +29,8 @@
     (let [fake-om (reify om-cli/Om
                              (staged-director-config [this]
                                (slurp "resources/fixtures/staged-director-config.yml"))
+                    (deployed-products [this]
+                      (slurp "resources/fixtures/deployed-products/just_director.json"))
                              (curl [this path]
                                (condp = path
                                  "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
@@ -43,6 +46,8 @@
     (let [fake-om (reify om-cli/Om
                              (staged-director-config [this]
                                (slurp "resources/fixtures/staged-director-config.yml"))
+                    (deployed-products [this]
+                      (slurp "resources/fixtures/deployed-products/just_director.json"))
                              (curl [this path]
                                (condp = path
                                  "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
