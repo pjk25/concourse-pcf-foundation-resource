@@ -48,7 +48,7 @@
 
     (foundation/print-diff deployed-config desired-config)
 
-    (if-let [the-plan (plan/plan deployed-config desired-config)]
+    (if-let [the-plan (plan/plan om deployed-config desired-config)]
       (if (or (empty? the-plan) (get-in payload [:params :dry_run]))
         (do
           (binding [*out* *err*]

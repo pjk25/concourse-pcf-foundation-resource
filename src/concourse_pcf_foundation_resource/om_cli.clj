@@ -20,6 +20,7 @@
 
 (defprotocol Om
   (staged-director-config [this])
+  (deployed-products [this])
   (curl [this path])
   (configure-director [this config])
   (stage-product [this config])
@@ -37,6 +38,7 @@
       (binding [*out* *err*]
         (println "Invoking om with" args)))
     (sh/with-programs [om]
+      ; need to figure out how to print the result of a failed om command
       (apply om (concat base-args args)))))
 
 (defn- sh-om-side-stream-results
@@ -60,6 +62,9 @@
   Om
   (staged-director-config [this]
     (sh-om cli-options opsmgr "staged-director-config" "--no-redact"))
+
+  (deployed-products [this]
+    (sh-om cli-options opsmgr "deployed-products" "-f" "json"))
 
   (curl [this path]
     (sh-om cli-options opsmgr "curl" "--silent" "--path" path))

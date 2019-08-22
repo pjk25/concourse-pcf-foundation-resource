@@ -3,11 +3,16 @@
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
-            [concourse-pcf-foundation-resource.om-cli :as om-cli])
+            [concourse-pcf-foundation-resource.om-cli :as om-cli]
+            [concourse-pcf-foundation-resource.query.product :as product])
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
-(s/def ::action #{:configure-director :stage-product :configure-product :apply-changes})
+(s/def ::action #{:configure-director
+                  :upload-product
+                  :stage-product
+                  :configure-product
+                  :apply-changes})
 
 (s/def ::step (s/keys :req [::action]))
 
@@ -21,14 +26,18 @@
     ::options ["--skip-deploy-products"]}])
 
 (defn- deploy-product-plan
-  [desired-product-config]
-  [;; a first step of uploading the product is probably necessary (om upload-product)
-   {::action :stage-product
-    ::config desired-product-config}
-   {::action :configure-product
-    ::config desired-product-config}
-   {::action :apply-changes
-    ::options ["--product-name" (:product-name desired-product-config)]}])
+  [om desired-product-config]
+  (let [product-state (product/state om desired-product-config)]
+    (cond-> [{::action :configure-product
+              ::config desired-product-config}
+             {::action :apply-changes
+              ::options ["--product-name" (:product-name desired-product-config)]}]
+      (= :uploaded product-state) (concat [{::action :stage-product
+                                            ::config desired-product-config}])
+      (= :none product-state) (concat [{::action :upload-product
+                                        ::config desired-product-config}
+                                       {::action :stage-product
+                                        ::config desired-product-config}]))))
 
 (defn- find-product-with-name
   [name products]
@@ -56,11 +65,11 @@
   (reduce #(virtual-apply-step %2 %1) deployed-config plan))
 
 (defn- plans
-  [deployed-config desired-config]
+  [om deployed-config desired-config]
   (lazy-seq
    (if (foundation/requires-changes? (:director-config deployed-config) (:director-config desired-config))
      (let [ddp (deploy-director-plan (:director-config desired-config))]
-       (cons ddp (plans (virtual-apply-plan ddp deployed-config) desired-config)))
+       (cons ddp (plans om (virtual-apply-plan ddp deployed-config) desired-config)))
      (let [deployed-products (:products deployed-config)
            desired-products (:products desired-config)
            sorted-product-names (sort (distinct (map :product-name desired-products))) ; only what's desired - no support for delete yet
@@ -71,8 +80,8 @@
            has-delta? (fn [{:keys [deployed desired]}]
                         (if desired (foundation/requires-changes? deployed desired)))]
        (if-let [{:keys [name deployed desired]} (first (filter has-delta? product-config-pairs))]
-         (let [dpp (deploy-product-plan desired)]
-           (cons dpp (plans (virtual-apply-plan dpp deployed-config) desired-config)))
+         (let [dpp (deploy-product-plan om desired)]
+           (cons dpp (plans om (virtual-apply-plan dpp deployed-config) desired-config)))
          (list []))))))
 
 ; The plan is valid if after it is applied, all versions satisfy the versioning contstraints
@@ -84,11 +93,12 @@
   true)
 
 (defn plan
-  [deployed-config desired-config]
-  (first (filter valid-plan? (take 1000 (plans deployed-config desired-config)))))
+  [om deployed-config desired-config]
+  (first (filter valid-plan? (take 1000 (plans om deployed-config desired-config)))))
 
 (s/fdef plan
-        :args (s/cat :deployed-config ::foundation/config
+        :args (s/cat :om ::om-cli/om
+                     :deployed-config ::foundation/config
                      :desired-config ::foundation/config)
         :ret ::plan)
 
