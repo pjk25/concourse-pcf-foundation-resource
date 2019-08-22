@@ -15,6 +15,6 @@
           :else :none)))
 
 (s/fdef state
-  :args (s/cat :om ::om-cli/om
-               :product-config ::foundation/product-config)
-  :ret ::state)
+        :args (s/cat :om ::om-cli/om
+                     :product-config ::foundation/product-config)
+        :ret ::state)

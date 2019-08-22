@@ -27,16 +27,16 @@
 
   (testing "adding a tile"
     (let [fake-om (reify om-cli/Om
-                             (staged-director-config [this]
-                               (slurp "resources/fixtures/staged-director-config.yml"))
+                    (staged-director-config [this]
+                      (slurp "resources/fixtures/staged-director-config.yml"))
                     (deployed-products [this]
                       (slurp "resources/fixtures/deployed-products/just_director.json"))
-                             (curl [this path]
-                               (condp = path
-                                 "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
-                                 "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
-                                 "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
-                                 (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))
+                    (curl [this path]
+                      (condp = path
+                        "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
+                        "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
+                        "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
+                        (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))
           deployed-config (yaml/parse-string (slurp "resources/fixtures/director-deployed.yml"))
           desired-config (yaml/parse-string (slurp "resources/fixtures/desired-config/configuration.yml") :key-fn keyword)]
       (is (s/valid? ::plan/plan (plan/plan fake-om deployed-config desired-config)))
@@ -44,16 +44,16 @@
 
   (testing "when there is nothing to do"
     (let [fake-om (reify om-cli/Om
-                             (staged-director-config [this]
-                               (slurp "resources/fixtures/staged-director-config.yml"))
+                    (staged-director-config [this]
+                      (slurp "resources/fixtures/staged-director-config.yml"))
                     (deployed-products [this]
                       (slurp "resources/fixtures/deployed-products/just_director.json"))
-                             (curl [this path]
-                               (condp = path
-                                 "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
-                                 "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
-                                 "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
-                                 (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))
+                    (curl [this path]
+                      (condp = path
+                        "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
+                        "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
+                        "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
+                        (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))
           desired-config (yaml/parse-string (slurp "resources/fixtures/desired-config/configuration.yml") :key-fn keyword)]
       (is (s/valid? ::plan/plan (plan/plan fake-om desired-config desired-config)))
       (is (= [] (plan/plan fake-om desired-config desired-config))))))
