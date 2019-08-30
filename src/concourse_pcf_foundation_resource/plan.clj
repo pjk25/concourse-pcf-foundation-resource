@@ -21,89 +21,69 @@
 (defn- deploy-director-plan
   [desired-director-config]
   [{::action :configure-director
-    ::config desired-director-config}
-   {::action :apply-changes
-    ::options ["--skip-deploy-products"]}])
+    ::config desired-director-config}])
 
 (defn- deploy-product-plan
   [om desired-product-config]
   (let [configure-product-step {::action :configure-product
-                                ::config desired-product-config}
-        apply-changes-step {::action :apply-changes
-                            ::options ["--product-name" (:product-name desired-product-config)]}]
+                                ::config desired-product-config}]
     (condp = (product/state om desired-product-config)
       :none [{::action :upload-product
               ::config desired-product-config}
              {::action :stage-product
               ::config desired-product-config}
-             configure-product-step
-             apply-changes-step]
+             configure-product-step]
       :uploaded [{::action :stage-product
                   ::config desired-product-config}
-                 configure-product-step
-                 apply-changes-step]
-      [configure-product-step
-       apply-changes-step])))
+                 configure-product-step]
+      [configure-product-step])))
+
+(defn- director-plan
+  [deployed-director-config desired-director-config]
+  (if (foundation/requires-changes? deployed-director-config desired-director-config)
+    (deploy-director-plan desired-director-config)
+    []))
+
+(defn- product-plan
+  [om deployed-config desired-config]
+  (if (foundation/requires-changes? deployed-config desired-config)
+    (deploy-product-plan om desired-config)
+    []))
 
 (defn- find-product-with-name
   [name products]
   (first (filter #(= name (:product-name %)) products)))
 
-(defmulti virtual-apply-step (fn [step deployed-config] (::action step)))
+(defn- product-plans
+  [om deployed-products desired-products]
+  (let [sorted-product-names (sort (distinct (map :product-name desired-products))) ; only what's desired - no support for delete yet
+        collect-product-configs-fn (fn [name] {:name name
+                                               :deployed (find-product-with-name name deployed-products)
+                                               :desired (find-product-with-name name desired-products)})
+        product-config-pairs (map collect-product-configs-fn sorted-product-names)]
+    (map #(product-plan om (:deployed %) (:desired %)) product-config-pairs)))
 
-(defmethod virtual-apply-step :configure-director [step deployed-config]
-  (assoc deployed-config :director-config (::config step)))
+(defn- with-apply-changes
+  [other-steps]
+  (let [actions (map ::action other-steps)]
+    (cond-> other-steps
+      (= [:configure-director] actions)
+      (concat [{::action :apply-changes
+                ::options ["--skip-deploy-products"]}])
 
-(defmethod virtual-apply-step :upload-product [step deployed-config]
-  deployed-config)
-
-(defmethod virtual-apply-step :stage-product [step deployed-config]
-  deployed-config)
-
-(defmethod virtual-apply-step :configure-product [step deployed-config]
-  (let [name (:product-name (::config step))
-        product-index (first (keep-indexed #(if (= name (:product-name %2)) %1) (:products deployed-config)))]
-    (assoc-in deployed-config [:products product-index] (::config step))))
-
-(defmethod virtual-apply-step :apply-changes [step deployed-config]
-  deployed-config)
-
-(defn- virtual-apply-plan
-  [plan deployed-config]
-  ;; this could be made more complex where staged changes are modeled, and applying moves them over to "deployed"
-  (reduce #(virtual-apply-step %2 %1) deployed-config plan))
-
-(defn- plans
-  [om deployed-config desired-config]
-  (lazy-seq
-   (if (foundation/requires-changes? (:director-config deployed-config) (:director-config desired-config))
-     (let [ddp (deploy-director-plan (:director-config desired-config))]
-       (cons ddp (plans om (virtual-apply-plan ddp deployed-config) desired-config)))
-     (let [deployed-products (:products deployed-config)
-           desired-products (:products desired-config)
-           sorted-product-names (sort (distinct (map :product-name desired-products))) ; only what's desired - no support for delete yet
-           collect-product-configs-fn (fn [name] {:name name
-                                                  :deployed (find-product-with-name name deployed-products)
-                                                  :desired (find-product-with-name name desired-products)})
-           product-config-pairs (map collect-product-configs-fn sorted-product-names)
-           has-delta? (fn [{:keys [deployed desired]}]
-                        (if desired (foundation/requires-changes? deployed desired)))]
-       (if-let [{:keys [name deployed desired]} (first (filter has-delta? product-config-pairs))]
-         (let [dpp (deploy-product-plan om desired)]
-           (cons dpp (plans om (virtual-apply-plan dpp deployed-config) desired-config)))
-         (list []))))))
-
-; The plan is valid if after it is applied, all versions satisfy the versioning contstraints
-; The versioning constraints should be an edn file given as an input to the 'put' of the resource
-; generally speaking, it will be along the lines of, if necessary, deploy director, then other products
-; the versioning constraints should more of less enforce that PAS goes first
-(defn- valid-plan?
-  [plan]
-  true)
+      (< 0 (count (filter #{:configure-product} actions)))
+      (concat [{::action :apply-changes
+                ::options (let [configure-product-steps (filter #(= :configure-product (::action %))
+                                                                other-steps)
+                                product-names (map #(-> % ::config :product-name) configure-product-steps)]
+                            (flatten (map #(list "--product-name" %) product-names)))}]))))
 
 (defn plan
   [om deployed-config desired-config]
-  (first (filter valid-plan? (take 1000 (plans om deployed-config desired-config)))))
+  (let [ddp (director-plan (:director-config deployed-config) (:director-config desired-config))
+        dpps (product-plans om (:products deployed-config) (:products desired-config))
+        all-steps-except-apply-changes (apply concat ddp dpps)]
+    (with-apply-changes all-steps-except-apply-changes)))
 
 (s/fdef plan
         :args (s/cat :om ::om-cli/om

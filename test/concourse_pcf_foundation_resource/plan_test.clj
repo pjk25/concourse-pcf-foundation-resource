@@ -23,9 +23,9 @@
                         (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))
           desired-config (yaml/parse-string (slurp "resources/fixtures/desired-config/configuration.yml") :key-fn keyword)]
       (is (s/valid? ::plan/plan (plan/plan fake-om {} desired-config)))
-      (is (= [:configure-director :apply-changes] (map ::plan/action (plan/plan fake-om {} desired-config))))))
+      (is (= [:configure-director :upload-product :stage-product :configure-product :apply-changes] (map ::plan/action (plan/plan fake-om {} desired-config))))))
 
-  (testing "adding a tile"
+  (testing "director already deployed"
     (let [fake-om (reify om-cli/Om
                     (staged-director-config [this]
                       (slurp "resources/fixtures/staged-director-config.yml"))
@@ -40,7 +40,7 @@
           deployed-config (yaml/parse-string (slurp "resources/fixtures/director-deployed.yml"))
           desired-config (yaml/parse-string (slurp "resources/fixtures/desired-config/configuration.yml") :key-fn keyword)]
       (is (s/valid? ::plan/plan (plan/plan fake-om deployed-config desired-config)))
-      (is (= [:stage-product :configure-product :apply-changes] (map ::plan/action (plan/plan fake-om deployed-config desired-config))))))
+      (is (= [:upload-product :stage-product :configure-product :apply-changes] (map ::plan/action (plan/plan fake-om deployed-config desired-config))))))
 
   (testing "when there is nothing to do"
     (let [fake-om (reify om-cli/Om
