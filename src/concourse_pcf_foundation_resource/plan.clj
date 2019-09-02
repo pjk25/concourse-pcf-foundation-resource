@@ -115,16 +115,19 @@
 (defmulti description ::action)
 
 (defmethod description :configure-director [step]
-  (str (::action step) " - " "Configure the director tile"))
+  (str "Configure the director tile"))
+
+(defmethod description :upload-product [step]
+  (str "Upload product " (:product-name (::config step)) (:version (::config step))))
 
 (defmethod description :stage-product [step]
-  (str (::action step) "-" "Stage" (:product-name (::config step)) (:version ())))
+  (str "Stage product " (:product-name (::config step)) (:version (::config step))))
 
 (defmethod description :configure-product [step]
-  (str (::action step) "-" "Configure" (:product-name (::config step))))
+  (str "Configure product " (:product-name (::config step))))
 
 (defmethod description :apply-changes [step]
-  (str (::action step) " - " "Apply Changes"))
+  (str "Apply Changes"))
 
 (defn describe-plan
   [p]

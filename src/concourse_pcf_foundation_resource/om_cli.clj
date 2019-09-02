@@ -21,6 +21,8 @@
 (defprotocol Om
   (staged-director-config [this])
   (deployed-products [this])
+  (staged-products [this])
+  (available-products [this])
   (curl [this path])
   (configure-director [this config])
   (stage-product [this config])
@@ -65,6 +67,12 @@
 
   (deployed-products [this]
     (sh-om cli-options opsmgr "deployed-products" "-f" "json"))
+
+  (staged-products [this]
+    (sh-om cli-options opsmgr "staged-products" "-f" "json"))
+
+  (available-products [this]
+    (sh-om cli-options opsmgr "available-products" "-f" "json"))
 
   (curl [this path]
     (sh-om cli-options opsmgr "curl" "--silent" "--path" path))

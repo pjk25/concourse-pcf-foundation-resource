@@ -6,13 +6,36 @@
 
 (s/def ::state #{:none :deployed :staged :uploaded})
 
+(defn- deployed-products
+  [om]
+  (json/read-str (om-cli/deployed-products om)
+                 :key-fn keyword))
+
+(defn- staged-products
+  [om]
+  (json/read-str (om-cli/staged-products om)
+                 :key-fn keyword))
+
+(defn- available-products
+  [om]
+  (try
+    (json/read-str (om-cli/available-products om)
+                   :key-fn keyword)
+    (catch Exception e
+      [])))
+
 (defn state
   [om product-config]
-  (let [deployed-products (json/read-str (om-cli/deployed-products om) :key-fn keyword)]
-    (cond (some #(and (= (:name %) (:product-name product-config))
-                      (= (:version %) (:version product-config)))
-                (map #(select-keys % [:name :version]) deployed-products)) :deployed
-          :else :none)))
+  (cond (some #(and (= (:name %) (:product-name product-config))
+                    (= (:version %) (:version product-config)))
+              (deployed-products om)) :deployed
+        (some #(and (= (:name %) (:product-name product-config))
+                    (= (:version %) (:version product-config)))
+              (staged-products om)) :staged
+        (some #(and (= (:name %) (:product-name product-config))
+                    (= (:version %) (:version product-config)))
+              (available-products om)) :uploaded
+        :else :none))
 
 (s/fdef state
         :args (s/cat :om ::om-cli/om
