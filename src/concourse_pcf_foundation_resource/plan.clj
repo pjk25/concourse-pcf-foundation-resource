@@ -2,6 +2,10 @@
   (:require [clojure.core.match :refer [match]]
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
+            [clojure.java.io :as io]
+            [amazonica.core :as aws]
+            [amazonica.aws.s3 :as s3]
+            [progress.file :as progress]
             [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.query.product :as product])
@@ -98,6 +102,26 @@
   (fn [cli-options om]
     (om-cli/configure-director om (::config step))))
 
+(defmethod executor :upload-product [step]
+  (fn [cli-options om]
+    (let [config (::config step)
+          source (:source config)
+          download-file (-> (Files/createTempDirectory "concourse-pcf-foundation-resource-"
+                                                       (into-array FileAttribute []))
+                            (.toFile)
+                            (io/file "download.pivotal"))]
+      (if (:debug cli-options)
+        (binding [*out* *err*]
+          (println "\tDownloading product to " (.toString download-file))))
+      (aws/with-credential [(:access_key_id source)
+                            (:secret_access_key source)
+                            (:endpoint source)]
+        (let [object (s3/get-object (:bucket source) (:file source))]
+          (progress/with-file-progress download-file :filesize (:content-length object)
+            (with-open [is (:input-stream object)]
+              (io/copy is download-file)))))
+      (om-cli/upload-product om config download-file))))
+
 (defmethod executor :configure-product [step]
   (fn [cli-options om]
     (om-cli/configure-product om (::config step))))
@@ -118,10 +142,10 @@
   (str "Configure the director tile"))
 
 (defmethod description :upload-product [step]
-  (str "Upload product " (:product-name (::config step)) (:version (::config step))))
+  (str "Upload product " (:product-name (::config step)) " " (:version (::config step))))
 
 (defmethod description :stage-product [step]
-  (str "Stage product " (:product-name (::config step)) (:version (::config step))))
+  (str "Stage product " (:product-name (::config step)) " " (:version (::config step))))
 
 (defmethod description :configure-product [step]
   (str "Configure product " (:product-name (::config step))))
