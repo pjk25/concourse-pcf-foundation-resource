@@ -94,7 +94,7 @@
     (let [config-file (-> (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
                           (.toString)
                           (io/file "product-config.yml"))]
-      (spit config-file (yaml/generate-string config))
+      (spit config-file (yaml/generate-string (dissoc config :source :version)))
       (sh-om-side-stream-results cli-options opsmgr "configure-product" "--config" (.toString config-file))))
 
   (apply-changes [this options]

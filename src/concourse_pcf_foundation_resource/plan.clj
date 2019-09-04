@@ -120,6 +120,10 @@
             (io/copy is download-file))))
       (om-cli/upload-product om config (.getPath download-file)))))
 
+(defmethod executor :stage-product [step]
+  (fn [cli-options om]
+    (om-cli/stage-product om (::config step))))
+
 (defmethod executor :configure-product [step]
   (fn [cli-options om]
     (om-cli/configure-product om (::config step))))
