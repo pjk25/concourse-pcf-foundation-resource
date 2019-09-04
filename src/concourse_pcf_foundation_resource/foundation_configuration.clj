@@ -75,7 +75,7 @@
 
 (s/def ::config (s/keys :opt-un [::director-config ::products]))
 
-(defn- first-difference
+(defn first-difference
   ([l r] (first-difference l r []))
   ([l r rpath]
    (match [(= l r) l r]
@@ -85,25 +85,6 @@
                                               {:l l :r r :path rpath}
                                               (some #(first-difference %1 %2 (conj rpath %3)) l r (range)))
      :else {:l l :r r :path rpath})))
-
-(defn print-diff
-  "Print a simplified diff of the configurations to *err*"
-  [deployed-config desired-config]
-  (binding [*out* *err*]
-    (println "Currently deployed configuration:")
-    (pprint deployed-config)
-    (println)
-    (println "Desired configuration:")
-    (pprint desired-config)
-    (println)
-    (if-let [{:keys [path l r]} (first-difference (util/select desired-config deployed-config)
-                                                  desired-config)]
-      (println (format "Found difference at %s: %s -> %s" path l r)))))
-
-(s/fdef print-diff
-        :args (s/cat :deployed-config ::config
-                     :desired-config ::config)
-        :ret nil?)
 
 (defn requires-changes?
   [deployed desired]

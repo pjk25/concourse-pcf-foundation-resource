@@ -25,6 +25,19 @@
         deployed-config (s/conform ::foundation/config raw-deployed-config)
         desired-config (s/conform ::foundation/config raw-desired-config)]
 
+    (let [config-dir (-> (Files/createTempDirectory "concourse-pcf-foundation-resource-"
+                                                    (into-array FileAttribute []))
+                         (.toFile))]
+      (if (:debug cli-options)
+        (binding [*out* *err*]
+          (println "Writing configuration files to " (.toString config-dir))))
+      (with-open [w (io/writer (io/file config-dir "deployed.edn"))]
+        (binding [*out* w]
+          (pr deployed-config)))
+      (with-open [w (io/writer (io/file config-dir "desired.edn"))]
+        (binding [*out* w]
+          (pr desired-config))))
+
     (when (= ::s/invalid deployed-config)
       (binding [*out* *err*]
         (println "Internal inconsistency: The deployed foundation configuration is not valid")
@@ -46,7 +59,9 @@
           (pprint extra-config))
         (throw (ex-info "The supplied foundation configuration contains extraneous data" {}))))
 
-    (foundation/print-diff deployed-config desired-config)
+    (if-let [{:keys [path]} (foundation/first-difference (util/select desired-config deployed-config)
+                                                         desired-config)]
+      (println (format "Found configuration difference at %s" path)))
 
     (if-let [the-plan (plan/plan om deployed-config desired-config)]
       (if (or (empty? the-plan) (get-in payload [:params :dry_run]))
