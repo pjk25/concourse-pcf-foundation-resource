@@ -1,0 +1,53 @@
+{
+  "installations": [
+    {
+      "user_name": "admin",
+      "finished_at": "2019-09-04T14:37:20.308Z",
+      "started_at": "2019-09-04T13:47:05.058Z",
+      "status": "failed",
+      "additions": [
+        {
+          "identifier": "cf",
+          "label": "Small Footprint PAS",
+          "product_version": "2.5.4",
+          "deployment_status": "failed",
+          "change_type": "addition",
+          "guid": "cf-51d3585ae6bef38cd9d9"
+        }
+      ],
+      "deletions": [],
+      "updates": [],
+      "unchanged": [
+        {
+          "identifier": "p-bosh",
+          "label": "BOSH Director",
+          "product_version": "2.5.4-build.189",
+          "deployment_status": "successful",
+          "change_type": "unchanged",
+          "guid": "p-bosh-9bdb9b8c08566241cb01"
+        }
+      ],
+      "id": 2
+    },
+    {
+      "user_name": "admin",
+      "finished_at": "2019-08-22T13:30:49.704Z",
+      "started_at": "2019-08-22T13:19:39.081Z",
+      "status": "succeeded",
+      "additions": [
+        {
+          "identifier": "p-bosh",
+          "label": "BOSH Director",
+          "product_version": "2.5.4-build.189",
+          "deployment_status": "successful",
+          "change_type": "addition",
+          "guid": "p-bosh-9bdb9b8c08566241cb01"
+        }
+      ],
+      "deletions": [],
+      "updates": [],
+      "unchanged": [],
+      "id": 1
+    }
+  ]
+}

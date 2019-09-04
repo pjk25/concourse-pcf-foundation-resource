@@ -26,6 +26,7 @@
 (defn- changes-being-applied?
   [parsed-installations-response]
   (-> parsed-installations-response
+      (:installations)
       (first)
       (:status)
       (= "running")))
@@ -33,6 +34,7 @@
 (defn- last-apply-changes-failed?
   [parsed-installations-response]
   (-> parsed-installations-response
+      (:installations)
       (first)
       (:status)
       (= "failed")))
@@ -48,8 +50,8 @@
 (defn- deployed-config
   [cli-options om]
   ; this will need to take into account the staged products and staged-config for each
-  ; om curl -p /api/v0/staged/products NOT om staged-products (can't control the output formal)
-  (let [staged-products (json/read-str (om-cli/curl om "/api/v0/staged/products") :key-fn keyword)
+  ; TODO: the products part
+  (let [staged-products (json/read-str (om-cli/staged-products om) :key-fn keyword)
         products []
         director-config (fixup-staged-director-config (yaml/parse-string (om-cli/staged-director-config om)))
         full-config (cond-> {:director-config director-config}
