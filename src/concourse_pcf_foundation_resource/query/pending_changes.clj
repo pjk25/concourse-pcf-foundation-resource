@@ -6,6 +6,7 @@
   [parsed-pending-changes-response]
   (match [parsed-pending-changes-response]
     [{:product_changes [{:action "install" :staged {:identifier "p-bosh"}}]}] :fresh-opsman
+    [(_ :guard (fn [resp] (some #(not (= "unchanged" (:action %))) (:product_changes resp))))] :yes
     :else :no))
 
 (s/fdef interpret

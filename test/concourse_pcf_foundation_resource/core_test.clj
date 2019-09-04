@@ -9,59 +9,75 @@
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
-(comment (deftest current-version
-           (stest/instrument `core/current-version)
+(deftest deployed-configuration
+  (stest/instrument `core/deployed-configuration)
 
-           (testing "a fresh opsman with authentication already set up"
+  (testing "when the last apply changes failed"
+    (let [fake-om (reify om-cli/Om
+                    (staged-director-config [this]
+                      (slurp "resources/fixtures/staged-director-config.yml"))
+                    (curl [this path]
+                      (condp = path
+                        "/api/v0/installations" (slurp "resources/fixtures/curl/installations/failure.json")
+                        "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/director_deployed.json")
+                        (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
+      (is (thrown? clojure.lang.ExceptionInfo (core/deployed-configuration {} fake-om)))))
+
+  (testing "when changes are pending"
+    (let [fake-om (reify om-cli/Om
+                    (staged-director-config [this]
+                      (slurp "resources/fixtures/staged-director-config.yml"))
+                    (staged-products [this]
+                      "[]")
+                    (curl [this path]
+                      (condp = path
+                        "/api/v0/installations" (slurp "resources/fixtures/curl/installations/success.json")
+                        "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/docs.json")
+                        (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
+      (is (thrown? clojure.lang.ExceptionInfo (core/deployed-configuration {}  fake-om)))))
+
+  (testing "a fresh opsman with authentication already set up"
+    (let [fake-om (reify om-cli/Om
+                    (staged-director-config [this]
+                      (slurp "resources/fixtures/staged-director-config.yml"))
+                    (curl [this path]
+                      (condp = path
+                        "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
+                        "/api/v0/installations" (slurp "resources/fixtures/curl/installations/success.json")
+                        "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
+                        (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
+      (is (= (core/deployed-configuration {} fake-om)
+             {}))))
+
+  (comment (testing "when the configuration can be determined"
              (let [fake-om (reify om-cli/Om
                              (staged-director-config [this]
                                (slurp "resources/fixtures/staged-director-config.yml"))
+                             (staged-products [this]
+                               "[]")
                              (curl [this path]
                                (condp = path
                                  "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
-                                 "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
-                                 "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
-                                 (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))
-                   temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
-                   destination (.toString temp-dir)]
-               (is (= (core/current-version! {} fake-om destination)
-                      {:opsman_version "2.5.4-build.189"}))))
+                                 "/api/v0/installations" (slurp "resources/fixtures/curl/installations/success.json")
+                                 "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/director_deployed.json")
+                                 (throw (ex-info (slurp "resources/fixtures/curl_not_found.html") {:path path})))))]
+               (is (= (core/deployed-configuration {} fake-om)
+                      {}))))))
 
-           (testing "when changes are being applied"
-             (let [fake-om (reify om-cli/Om
-                             (staged-director-config [this]
-                               (slurp "resources/fixtures/staged-director-config.yml"))
-                             (curl [this path]
-                               (condp = path
-                                 "/api/v0/installations" (slurp "resources/fixtures/installations_running.json")
-                                 "/api/v0/staged/pending_changes" (slurp "resources/fixtures/pending_changes.json")
-                                 (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
-               (is (thrown? clojure.lang.ExceptionInfo (core/current-version! {} fake-om "")))))
+(deftest current-version
+  (stest/instrument `core/current-version)
 
-           (testing "when changes are pending"
-             (let [fake-om (reify om-cli/Om
-                             (staged-director-config [this]
-                               (slurp "resources/fixtures/staged-director-config.yml"))
-                             (curl [this path]
-                               (condp = path
-                                 "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
-                                 "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/docs.json")
-                                 (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
-               (is (thrown? clojure.lang.ExceptionInfo (core/current-version! {} fake-om "")))))
+  (testing "a fresh opsman with authentication already set up"
+    (let [fake-om (reify om-cli/Om
+                    (staged-director-config [this]
+                      (slurp "resources/fixtures/staged-director-config.yml"))
+                    (curl [this path]
+                      (condp = path
+                        "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
+                        "/api/v0/installations" (slurp "resources/fixtures/curl/installations/success.json")
+                        "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
+                        (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
+      (is (= (core/current-version fake-om {:fake_key 1})
+             {:opsman_version "2.5.4-build.189"
+              :configuration_hash (format "%x" (hash {:fake_key 1}))})))))
 
-           (testing "when the version can be determined"
-             (let [fake-om (reify om-cli/Om
-                             (staged-director-config [this]
-                               (slurp "resources/fixtures/staged-director-config.yml"))
-                             (curl [this path]
-                               (condp = path
-                                 "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
-                                 "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
-                                 "/api/v0/staged/pending_changes" (slurp "resources/fixtures/pending_changes_none.json")
-                                 (throw (ex-info (slurp "resources/fixtures/curl_not_found.html") {:path path})))))
-                   temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
-                   destination (.toString temp-dir)]
-               (is (= (core/current-version! {} fake-om destination)
-                      [{:opsman_version "2.5.4-build.189"
-                        :configuration_hash (digest/sha256 (slurp "resources/fixtures/staged-director-config.yml"))}]))
-               (is (.exists (io/file destination "configuration.yml")))))))

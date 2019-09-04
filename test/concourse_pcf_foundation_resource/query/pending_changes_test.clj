@@ -13,4 +13,8 @@
 
   (testing "when the director has been finished installing/deploying and nothing else is queued"
     (is (= :no (pending-changes/interpret (json/read-str (slurp "resources/fixtures/curl/pending_changes/director_deployed.json")
-                                                         :key-fn keyword))))))
+                                                         :key-fn keyword)))))
+
+  (testing "when changes are pending"
+    (is (= :yes (pending-changes/interpret (json/read-str (slurp "resources/fixtures/curl/pending_changes/docs.json")
+                                                          :key-fn keyword))))))

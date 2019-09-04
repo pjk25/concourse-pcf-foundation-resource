@@ -16,7 +16,7 @@
     (curl [this path]
       (condp = path
         "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
-        "/api/v0/installations" (slurp "resources/fixtures/curl/installations.json")
+        "/api/v0/installations" (slurp "resources/fixtures/curl/installations/success.json")
         "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
         (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path}))))))
 
