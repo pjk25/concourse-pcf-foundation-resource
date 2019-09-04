@@ -25,6 +25,7 @@
   (available-products [this])
   (curl [this path])
   (configure-director [this config])
+  (upload-product [this config file])
   (stage-product [this config])
   (configure-product [this config])
   (apply-changes [this options]))
@@ -51,10 +52,9 @@
     (if (:debug cli-options)
       (binding [*out* *err*]
         (println "Invoking om with" args)))
-    (let [p (apply sh-ll/proc "om" (concat base-args args))]
+    (let [p (apply sh-ll/proc "om" (concat base-args args [:redirect-err true]))]
       (if (:debug cli-options)
-        (binding [*out* *err*]
-          (sh-ll/stream-to-out p :out)))
+        (sh-ll/stream-to p :out (System/err)))
       (let [status (sh-ll/exit-code p)]
         (condp = status
           0 "\nom invocation completed successfully."
@@ -84,8 +84,11 @@
       (spit config-file (yaml/generate-string config))
       (sh-om-side-stream-results cli-options opsmgr "configure-director" "--config" (.toString config-file))))
 
+  (upload-product [this config file]
+    (sh-om-side-stream-results cli-options opsmgr "upload-product" "--product-version" (:version config) "--product" file))
+
   (stage-product [this config]
-    (sh-om cli-options opsmgr "stage-product" "--product-name" (:product-name config) "--product-version" (:product-version config)))
+    (sh-om cli-options opsmgr "stage-product" "--product-name" (:product-name config) "--product-version" (:version config)))
 
   (configure-product [this config]
     (let [config-file (-> (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
@@ -113,11 +116,17 @@
 
 (s/def ::product-name string?)
 
-(s/def ::product-version string?)
+(s/def ::version string?)
+
+(s/fdef upload-product
+        :args (s/cat :this ::om
+                     :config (s/keys :req-un [::product-name ::version])
+                     :file string?)
+        :ret string?)
 
 (s/fdef stage-product
         :args (s/cat :this ::om
-                     :config (s/keys :req-un [::product-name ::product-version]))
+                     :config (s/keys :req-un [::product-name ::version]))
         :ret string?)
 
 (s/fdef configure-product

@@ -5,7 +5,6 @@
             [clojure.java.io :as io]
             [amazonica.core :as aws]
             [amazonica.aws.s3 :as s3]
-            [progress.file :as progress]
             [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.query.product :as product])
@@ -117,10 +116,9 @@
                             (:secret_access_key source)
                             (:endpoint source)]
         (let [object (s3/get-object (:bucket source) (:file source))]
-          (progress/with-file-progress download-file :filesize (:content-length object)
-            (with-open [is (:input-stream object)]
-              (io/copy is download-file)))))
-      (om-cli/upload-product om config download-file))))
+          (with-open [is (:input-stream object)]
+            (io/copy is download-file))))
+      (om-cli/upload-product om config (.getPath download-file)))))
 
 (defmethod executor :configure-product [step]
   (fn [cli-options om]

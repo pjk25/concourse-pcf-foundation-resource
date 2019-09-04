@@ -4,8 +4,7 @@
         org.clojure/core.match      {:mvn/version "0.3.0"}
         clj-commons/clj-yaml        {:mvn/version "0.7.0"}
         me.raynes/conch             {:mvn/version "0.8.0"}
-        amazonica                   {:mvn/version "0.3.146"}
-        progress                    {:mvn/version "1.0.2"}}
+        amazonica                   {:mvn/version "0.3.146"}}
  :aliases {:test {:extra-paths ["test"]
                   :extra-deps {org.clojure/test.check {:mvn/version "0.9.0"}
                                com.cognitect/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"

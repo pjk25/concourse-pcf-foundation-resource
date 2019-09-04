@@ -38,6 +38,24 @@
 
 (s/def ::product-name string?)
 
+(s/def ::version string?)
+
+(s/def ::endpoint string?)
+
+(s/def ::bucket string?)
+
+(s/def ::file string?)
+
+(s/def ::access_key_id string?)
+
+(s/def ::secret_access_key string?)
+
+(s/def ::source (s/keys :req-un [::endpoint
+                                 ::bucket
+                                 ::file
+                                 ::access_key_id
+                                 ::secret_access_key]))
+
 (s/def ::product-properties map?)
 
 (s/def ::network-properties map?)
@@ -46,8 +64,12 @@
 
 (s/def ::errand-config map?)
 
-(s/def ::product-config (s/keys :req-un [::product-name]
-                                :opt-un [::product-properties ::network-properties ::resource-config ::errand-config]))
+(s/def ::product-config (s/keys :req-un [::product-name ::version]
+                                :opt-un [::source
+                                         ::product-properties
+                                         ::network-properties
+                                         ::resource-config
+                                         ::errand-config]))
 
 (s/def ::products (s/coll-of ::product-config :distinct true :into #{}))
 
@@ -100,16 +122,3 @@
         :args (s/cat :config ::config)
         :ret ::config)
 
-; the yaml
-; ---
-; director-config: {}
-; products:
-; - id: cf
-;   version: (read-only)
-;   tile-path: (write-only)
-;   tile-sha: (read-only? (if we can give it))
-;   config: {}
-
-;; should be able to write the "plan" definition out to disk-
-;; Maybe this should actually be 2 resources, then the put that
-;; applys the plan?

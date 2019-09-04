@@ -68,3 +68,10 @@ director-config:
         scheme: INTERNAL
 products:
   - product-name: foo
+    version: 1.0.0
+    source:
+      endpoint: https://www.foo.com
+      bucket: pivnet_files
+      file: foo-1.0.0.pivotal
+      access_key_id: FAKE_ACCESS_KEY
+      secret_access_key: FAKE_SECRET_KEY

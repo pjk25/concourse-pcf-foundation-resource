@@ -14,6 +14,8 @@
     (let [fake-om (reify om-cli/Om
                     (staged-director-config [this]
                       (slurp "resources/fixtures/staged-director-config.yml"))
+                    (available-products [this] "[]")
+                    (staged-products [this] "[]")
                     (deployed-products [this] "[]")
                     (curl [this path]
                       (condp = path
@@ -29,6 +31,8 @@
     (let [fake-om (reify om-cli/Om
                     (staged-director-config [this]
                       (slurp "resources/fixtures/staged-director-config.yml"))
+                    (available-products [this] "[]")
+                    (staged-products [this] "[]")
                     (deployed-products [this]
                       (slurp "resources/fixtures/deployed-products/just_director.json"))
                     (curl [this path]
