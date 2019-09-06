@@ -47,15 +47,20 @@
                 (first (:iaas-configurations config)))
       (dissoc :iaas-configurations)))
 
+(defn- product-config
+  [cli-options om deployed-product]
+  (let [{:keys [name version]} deployed-product
+        product-config (yaml/parse-string (om-cli/staged-config om name))]
+    (assoc product-config :version version)))
+
 (defn- deployed-config
   [cli-options om]
-  ; this will need to take into account the staged products and staged-config for each
-  ; TODO: the products part
-  (let [staged-products (json/read-str (om-cli/staged-products om) :key-fn keyword)
-        products []
-        director-config (fixup-staged-director-config (yaml/parse-string (om-cli/staged-director-config om)))
+  (let [director-config (fixup-staged-director-config (yaml/parse-string (om-cli/staged-director-config om)))
+        deployed-products (remove #(= "p-bosh" (:name %))
+                                  (json/read-str (om-cli/deployed-products om) :key-fn keyword))
+        product-configs (map #(product-config cli-options om %) deployed-products)
         full-config (cond-> {:director-config director-config}
-                      (seq products) (assoc :products products))]
+                      (seq product-configs) (assoc :products product-configs))]
     (foundation/select-writable-config full-config)))
 
 (defn deployed-configuration

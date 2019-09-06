@@ -20,6 +20,7 @@
 
 (defprotocol Om
   (staged-director-config [this])
+  (staged-config [this product-name])
   (deployed-products [this])
   (staged-products [this])
   (available-products [this])
@@ -65,6 +66,9 @@
   (staged-director-config [this]
     (sh-om cli-options opsmgr "staged-director-config" "--no-redact"))
 
+  (staged-config [this product-name]
+    (sh-om cli-options opsmgr "staged-config" "--product-name" product-name "--include-credentials"))
+
   (deployed-products [this]
     (sh-om cli-options opsmgr "deployed-products" "-f" "json"))
 
@@ -103,6 +107,11 @@
 (s/fdef staged-director-config
         :args (s/cat :this ::om)
         :ret string?)
+
+(s/fdef staged-config
+  :args (s/cat :this ::om
+               :product-name string?)
+  :ret string?)
 
 (s/fdef curl
         :args (s/cat :this ::om

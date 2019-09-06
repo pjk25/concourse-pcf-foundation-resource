@@ -1,0 +1,12 @@
+[
+  {
+    "name": "p-bosh",
+    "version": "2.5.4-build.189",
+    "stemcell": "light-bosh-stemcell-250.48-google-kvm-ubuntu-xenial-go_agent.tgz"
+  },
+  {
+    "name": "cf",
+    "version": "2.5.4",
+    "stemcell": "light-bosh-stemcell-250.48-google-kvm-ubuntu-xenial-go_agent.tgz"
+  }
+]

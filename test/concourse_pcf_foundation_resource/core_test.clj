@@ -49,20 +49,28 @@
       (is (= (core/deployed-configuration {} fake-om)
              {}))))
 
-  (comment (testing "when the configuration can be determined"
-             (let [fake-om (reify om-cli/Om
-                             (staged-director-config [this]
-                               (slurp "resources/fixtures/staged-director-config.yml"))
-                             (staged-products [this]
-                               "[]")
-                             (curl [this path]
-                               (condp = path
-                                 "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
-                                 "/api/v0/installations" (slurp "resources/fixtures/curl/installations/success.json")
-                                 "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/director_deployed.json")
-                                 (throw (ex-info (slurp "resources/fixtures/curl_not_found.html") {:path path})))))]
-               (is (= (core/deployed-configuration {} fake-om)
-                      {}))))))
+  (testing "when the configuration can be determined"
+    (let [fake-om (reify om-cli/Om
+                    (staged-director-config [this]
+                      (slurp "resources/fixtures/staged-director-config.yml"))
+                    (staged-config [this product-name]
+                      (if (= product-name "cf")
+                        "product-name: cf"
+                        (throw (ex-info "product not found" {}))))
+                    (deployed-products [this]
+                      (slurp "resources/fixtures/deployed-products/director_and_cf.json"))
+                    (staged-products [this]
+                      (slurp "resources/fixtures/staged-products/director_and_cf.json"))
+                    (curl [this path]
+                      (condp = path
+                        "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
+                        "/api/v0/installations" (slurp "resources/fixtures/curl/installations/success.json")
+                        "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/director_deployed.json")
+                        (throw (ex-info (slurp "resources/fixtures/curl_not_found.html") {:path path})))))]
+      (is (= (keys (core/deployed-configuration {} fake-om))
+             [:director-config :products]))
+      (is (= (keys (:products (core/deployed-configuration {} fake-om)))
+             [:cf])))))
 
 (deftest current-version
   (stest/instrument `core/current-version)
