@@ -109,9 +109,9 @@
         :ret string?)
 
 (s/fdef staged-config
-  :args (s/cat :this ::om
-               :product-name string?)
-  :ret string?)
+        :args (s/cat :this ::om
+                     :product-name string?)
+        :ret string?)
 
 (s/fdef curl
         :args (s/cat :this ::om

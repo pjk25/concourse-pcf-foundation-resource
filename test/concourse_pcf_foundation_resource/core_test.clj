@@ -55,7 +55,7 @@
                       (slurp "resources/fixtures/staged-director-config.yml"))
                     (staged-config [this product-name]
                       (if (= product-name "cf")
-                        "product-name: cf"
+                        "product-name: cf\n"
                         (throw (ex-info "product not found" {}))))
                     (deployed-products [this]
                       (slurp "resources/fixtures/deployed-products/director_and_cf.json"))
@@ -69,8 +69,9 @@
                         (throw (ex-info (slurp "resources/fixtures/curl_not_found.html") {:path path})))))]
       (is (= (keys (core/deployed-configuration {} fake-om))
              [:director-config :products]))
-      (is (= (keys (:products (core/deployed-configuration {} fake-om)))
-             [:cf])))))
+      (is (= (:products (core/deployed-configuration {} fake-om))
+             [{:product-name "cf"
+               :version "2.5.4"}])))))
 
 (deftest current-version
   (stest/instrument `core/current-version)
