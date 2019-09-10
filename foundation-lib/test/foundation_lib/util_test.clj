@@ -1,8 +1,8 @@
-(ns concourse-pcf-foundation-resource.util-test
+(ns foundation-lib.util-test
   (:require [clojure.test :refer [deftest is testing run-tests]]
             [clojure.spec.alpha :as s]
             [clojure.spec.test.alpha :as stest]
-            [concourse-pcf-foundation-resource.util :as util]))
+            [foundation-lib.util :as util]))
 
 (s/def ::foo string?)
 

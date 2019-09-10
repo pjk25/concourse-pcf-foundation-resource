@@ -1,4 +1,4 @@
-(ns concourse-pcf-foundation-resource.util
+(ns foundation-lib.util
   (:require [clojure.core.match :refer [match]]
             [clojure.spec.alpha :as s]))
 

@@ -6,10 +6,10 @@
             [clojure.pprint :refer [pprint]]
             [concourse-pcf-foundation-resource.core :as core]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
-            [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
+            [foundation-lib.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.digest :as digest]
             [concourse-pcf-foundation-resource.plan :as plan]
-            [concourse-pcf-foundation-resource.util :as util]
+            [foundation-lib.util :as util]
             [clj-yaml.core :as yaml])
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))

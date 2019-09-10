@@ -1,8 +1,8 @@
-(ns concourse-pcf-foundation-resource.foundation-configuration
+(ns foundation-lib.foundation-configuration
   (:require [clojure.core.match :refer [match]]
             [clojure.spec.alpha :as s]
             [clojure.pprint :refer [pprint]]
-            [concourse-pcf-foundation-resource.util :as util]))
+            [foundation-lib.util :as util]))
 
 (s/def ::name string?)
 

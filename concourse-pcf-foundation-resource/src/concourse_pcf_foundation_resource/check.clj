@@ -3,7 +3,7 @@
             [clojure.spec.alpha :as s]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.core :as core]
-            [concourse-pcf-foundation-resource.foundation-configuration :as foundation])
+            [foundation-lib.foundation-configuration :as foundation])
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 

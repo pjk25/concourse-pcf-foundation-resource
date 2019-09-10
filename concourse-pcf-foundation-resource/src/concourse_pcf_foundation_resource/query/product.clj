@@ -1,7 +1,7 @@
 (ns concourse-pcf-foundation-resource.query.product
   (:require [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
-            [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
+            [foundation-lib.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]))
 
 (s/def ::state #{:none :deployed :staged :uploaded})

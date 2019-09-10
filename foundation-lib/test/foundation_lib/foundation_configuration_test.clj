@@ -1,9 +1,7 @@
-(ns concourse-pcf-foundation-resource.foundation-configuration-test
+(ns foundation-lib.foundation-configuration-test
   (:require [clojure.test :refer [deftest is testing run-tests]]
             [clojure.spec.test.alpha :as stest]
-            [clojure.data.json :as json]
-            [clojure.java.io :as io]
-            [concourse-pcf-foundation-resource.foundation-configuration :as foundation]))
+            [foundation-lib.foundation-configuration :as foundation]))
 
 (deftest requires-changes?
   (stest/instrument `foundation/requires-changes?)

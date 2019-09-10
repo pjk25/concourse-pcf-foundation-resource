@@ -6,7 +6,7 @@
             [concourse-pcf-foundation-resource.core :as core]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.digest :as digest]
-            [concourse-pcf-foundation-resource.foundation-configuration :as foundation]))
+            [foundation-lib.foundation-configuration :as foundation]))
 
 (defn in
   [cli-options om payload]

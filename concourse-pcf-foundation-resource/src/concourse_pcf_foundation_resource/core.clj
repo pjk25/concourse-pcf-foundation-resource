@@ -2,7 +2,7 @@
   (:require [clojure.core.match :refer [match]]
             [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
-            [concourse-pcf-foundation-resource.foundation-configuration :as foundation]
+            [foundation-lib.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.digest :as digest]
             [concourse-pcf-foundation-resource.plan :as plan]
