@@ -10,7 +10,11 @@
 
 (s/def ::bar (s/coll-of (s/keys :opt [::baz]) :distinct true))
 
-(s/def ::a-map (s/keys :req [::foo] :opt-un [::bar]))
+(s/def ::fuzz map?)
+
+(s/def ::a-map (s/keys :req [::foo]
+                       :opt [::fuzz]
+                       :opt-un [::bar]))
 
 (deftest only-specd
   (stest/instrument `util/only-specd)
@@ -23,7 +27,15 @@
 
   (is (= (util/only-specd ::a-map {::foo "foostr"
                                    :extra "extra-val"})
-         {::foo "foostr"})))
+         {::foo "foostr"}))
+
+  (is (= (util/only-specd ::fuzz {:a 1})
+         {:a 1}))
+
+  (is (= (util/only-specd ::a-map {::foo "foostr"
+                                   ::fuzz {:a 1}})
+         {::foo "foostr"
+          ::fuzz {:a 1}})))
 
 (deftest non-specd
   (stest/instrument `util/non-specd)
@@ -36,7 +48,17 @@
 
   (is (= (util/non-specd ::a-map {::foo 2
                                   :bar [{::baz 1 :tree 3}]})
-         {:bar [{:tree 3}]})))
+         {:bar [{:tree 3}]}))
+
+  (is (= (util/non-specd ::fuzz {:a 1})
+         {}))
+
+  (is (= (util/non-specd ::a-map {::foo 2
+                                  ::fuzz {:a 1}})
+         {}))
+
+  (is (= (util/non-specd ::bar [{::baz 1}])
+         [])))
 
 (deftest select
   (stest/instrument `util/select)
@@ -52,12 +74,12 @@
 (deftest structural-minus
   (stest/instrument `util/structural-minus)
 
-  (is (= {:a ::util/eluded}
+  (is (= {:a ::util/elided}
          (util/structural-minus {:a 1} {})))
 
-  (is (= {:a ::util/eluded}
+  (is (= {:a ::util/elided}
          (util/structural-minus {:a 1 :b 2} {:b 2})))
 
-  (is (= {:a ::util/eluded
-          :b {:d ::util/eluded}}
+  (is (= {:a ::util/elided
+          :b {:d ::util/elided}}
          (util/structural-minus {:a 1 :b {:c 2 :d 3}} {:b {:c 2}}))))

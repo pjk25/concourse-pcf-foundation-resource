@@ -60,7 +60,8 @@
                                                  %1))
                                             {}
                                             (concat req-un opt-un))))
-      [(['coll-of i & _] :seq)] (map #(non-specd i %) x)
+      [(['coll-of i & _] :seq)] (filter non-empty-collection? (map #(non-specd i %) x))
+      ['map?] {}
       :else x)))
 
 (defn select
@@ -84,13 +85,13 @@
     [{} {}] (merge (let [common-keys (clojure.set/intersection (set (keys a)) (set (keys b)))]
                      (reduce #(let [cm (structural-minus (%2 a) (%2 b))]
                                 (cond
-                                  (= ::eluded cm) %1
+                                  (= ::elided cm) %1
                                   (not (empty? cm)) (assoc %1 %2 cm)
                                   :else %1))
                              {}
                              common-keys))
-                   (map-values (apply dissoc a (keys b)) (constantly ::eluded)))
-    :else ::eluded))
+                   (map-values (apply dissoc a (keys b)) (constantly ::elided)))
+    :else ::elided))
 
 (s/fdef structural-minus
         :args (s/cat :a any? :b any?)
