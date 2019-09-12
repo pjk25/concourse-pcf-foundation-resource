@@ -73,7 +73,12 @@
 
 (s/def ::products (s/coll-of ::product-config :distinct true :into #{}))
 
-(s/def ::config (s/keys :opt-un [::director-config ::products]))
+(s/def ::opsman-version string?)
+
+(s/def ::deployed-config (s/keys :req-un [::opsman-version]
+                                 :opt-un [::director-config ::products]))
+
+(s/def ::desired-config (s/keys :opt-un [::opsman-version ::director-config ::products]))
 
 (defn first-difference
   ([l r] (first-difference l r []))
@@ -95,11 +100,11 @@
         :ret boolean?)
 
 (defn select-writable-config
-  "drop keys not known to ::config spec"
+  "drop keys not known to ::desired-config spec"
   [config]
-  (util/only-specd ::config config))
+  (util/only-specd ::desired-config config))
 
 (s/fdef select-writable-config
-        :args (s/cat :config ::config)
-        :ret ::config)
+        :args (s/cat :config ::desired-config)
+        :ret ::desired-config)
 

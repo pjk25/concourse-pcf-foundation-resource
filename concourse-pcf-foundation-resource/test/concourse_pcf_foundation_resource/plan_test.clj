@@ -24,8 +24,8 @@
                         "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
                         (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))
           desired-config (yaml/parse-string (slurp "resources/fixtures/desired-config/configuration.yml") :key-fn keyword)]
-      (is (s/valid? ::plan/plan (plan/plan fake-om {} desired-config)))
-      (is (= [:configure-director :upload-product :stage-product :configure-product :apply-changes] (map ::plan/action (plan/plan fake-om {} desired-config))))))
+      (is (s/valid? ::plan/plan (plan/plan fake-om {:opsman-version "2.5.4"} desired-config)))
+      (is (= [:configure-director :upload-product :stage-product :configure-product :apply-changes] (map ::plan/action (plan/plan fake-om {:opsman-version "2.5.4"} desired-config))))))
 
   (testing "director already deployed"
     (let [fake-om (reify om-cli/Om

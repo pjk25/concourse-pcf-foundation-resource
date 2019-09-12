@@ -47,7 +47,7 @@
                         "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
                         (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
       (is (= (core/deployed-configuration {} fake-om)
-             {}))))
+             {:opsman-version "2.5.4-build.189"}))))
 
   (testing "when the configuration can be determined"
     (let [fake-om (reify om-cli/Om
@@ -68,7 +68,7 @@
                         "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/director_deployed.json")
                         (throw (ex-info (slurp "resources/fixtures/curl_not_found.html") {:path path})))))]
       (is (= (keys (core/deployed-configuration {} fake-om))
-             [:director-config :products]))
+             [:director-config :products :opsman-version]))
       (is (= (:products (core/deployed-configuration {} fake-om))
              [{:product-name "cf"
                :version "2.5.4"}])))))
@@ -86,7 +86,6 @@
                         "/api/v0/installations" (slurp "resources/fixtures/curl/installations/success.json")
                         "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
                         (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
-      (is (= (core/current-version fake-om {:fake_key 1})
-             {:opsman_version "2.5.4-build.189"
-              :configuration_hash (format "%x" (hash {:fake_key 1}))})))))
+      (is (= (core/current-version fake-om {:opsman-version "2.5.4-build.189"})
+             (format "%x" (hash {:opsman-version "2.5.4-build.189"})))))))
 

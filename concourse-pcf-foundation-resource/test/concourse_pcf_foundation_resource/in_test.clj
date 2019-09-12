@@ -26,10 +26,8 @@
   (testing "with a fresh opsman with authentication already set up"
     (let [temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
           destination (.toString temp-dir)]
-      (is (= (in/in {:destination destination} fake-om {:version {:opsman_version "2.5.4-build.189"
-                                                                  :configuration_hash "ff19274a"}})
-             {:version {:opsman_version "2.5.4-build.189"
-                        :configuration_hash "ff19274a"}
+      (is (= (in/in {:destination destination} fake-om {:version "f9164bdd"})
+             {:version "f9164bdd"
               :metadata []}))))
 
   (testing "when the version does not exist"
@@ -38,5 +36,4 @@
       (is (thrown? clojure.lang.ExceptionInfo
                    (in/in {:destination destination}
                           fake-om
-                          {:version {:opsman_version "2.5.4-build.189"
-                                     :configuration_hash "some-fake-hash"}}))))))
+                          {:version "some-nonexistent-hash"}))))))

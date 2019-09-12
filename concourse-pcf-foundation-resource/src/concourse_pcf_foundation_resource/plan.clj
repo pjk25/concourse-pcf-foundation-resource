@@ -90,8 +90,8 @@
 
 (s/fdef plan
         :args (s/cat :om ::om-cli/om
-                     :deployed-config ::foundation/config
-                     :desired-config ::foundation/config)
+                     :deployed-config ::foundation/deployed-config
+                     :desired-config ::foundation/desired-config)
         :ret ::plan)
 
 ; TODO: make this multiple arity like virtual-apply-plan

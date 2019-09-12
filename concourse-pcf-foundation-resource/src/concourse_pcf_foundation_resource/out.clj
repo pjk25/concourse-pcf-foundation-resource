@@ -22,8 +22,8 @@
   [cli-options om payload]
   (let [raw-deployed-config (core/deployed-configuration cli-options om)
         raw-desired-config (yaml/parse-string (slurp (io/file (:source cli-options) "configuration.yml")))
-        deployed-config (s/conform ::foundation/config raw-deployed-config)
-        desired-config (s/conform ::foundation/config raw-desired-config)]
+        deployed-config (s/conform ::foundation/deployed-config raw-deployed-config)
+        desired-config (s/conform ::foundation/desired-config raw-desired-config)]
 
     (let [config-dir (-> (Files/createTempDirectory "concourse-pcf-foundation-resource-"
                                                     (into-array FileAttribute []))
@@ -41,17 +41,18 @@
     (when (= ::s/invalid deployed-config)
       (binding [*out* *err*]
         (println "Internal inconsistency: The deployed foundation configuration is not valid")
-        (s/explain ::foundation/config raw-deployed-config)
+        (s/explain ::foundation/deployed-config raw-deployed-config)
         (println))
       (throw (ex-info "Internal inconsistency: The deployed foundation configuration is not valid" {})))
 
     (when (= ::s/invalid desired-config)
       (binding [*out* *err*]
         (println "The supplied foundation configuration is not valid")
-        (s/explain ::foundation/config raw-desired-config)
+        (s/explain ::foundation/desired-config raw-desired-config)
         (println))
       (throw (ex-info "The supplied foundation configuration is not valid" {})))
 
+    ; TODO: reject configs where the opsman-version is given and wrong
     (let [extra-config (util/structural-minus desired-config (foundation/select-writable-config desired-config))]
       (when-not (empty? extra-config)
         (binding [*out* *err*]

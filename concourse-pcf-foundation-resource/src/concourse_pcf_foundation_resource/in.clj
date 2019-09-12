@@ -12,12 +12,12 @@
   [cli-options om payload]
   (let [requested-version (:version payload)
         raw-deployed-config (core/deployed-configuration cli-options om)
-        deployed-config (s/conform ::foundation/config raw-deployed-config)]
+        deployed-config (s/conform ::foundation/deployed-config raw-deployed-config)]
 
     (when (= ::s/invalid deployed-config)
       (binding [*out* *err*]
         (println "Internal inconsistency: The deployed foundation configuration is not valid")
-        (s/explain ::foundation/config raw-deployed-config)
+        (s/explain ::foundation/deployed-config raw-deployed-config)
         (println))
       (throw (ex-info "Internal inconsistency: The deployed foundation configuration is not valid" {})))
 

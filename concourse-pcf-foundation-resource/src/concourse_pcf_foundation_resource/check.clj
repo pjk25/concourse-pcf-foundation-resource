@@ -3,19 +3,17 @@
             [clojure.spec.alpha :as s]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.core :as core]
-            [foundation-lib.foundation-configuration :as foundation])
-  (:import [java.nio.file Files]
-           [java.nio.file.attribute FileAttribute]))
+            [foundation-lib.foundation-configuration :as foundation]))
 
 (defn check
   [cli-options om payload]
   (let [raw-deployed-config (core/deployed-configuration cli-options om)
-        deployed-config (s/conform ::foundation/config raw-deployed-config)]
+        deployed-config (s/conform ::foundation/deployed-config raw-deployed-config)]
 
     (when (= ::s/invalid deployed-config)
       (binding [*out* *err*]
         (println "Internal inconsistency: The deployed foundation configuration is not valid")
-        (s/explain ::foundation/config raw-deployed-config)
+        (s/explain ::foundation/deployed-config raw-deployed-config)
         (println))
       (throw (ex-info "Internal inconsistency: The deployed foundation configuration is not valid" {})))
 

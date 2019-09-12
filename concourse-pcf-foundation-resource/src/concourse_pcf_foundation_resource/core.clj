@@ -11,11 +11,7 @@
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
-(s/def ::opsman_version string?)
-
-(s/def ::configuration_hash string?)
-
-(s/def ::version (s/keys :req-un [::opsman_version] :opt-un [::configuration_hash]))
+(s/def ::version string?)
 
 (s/def ::name string?)
 
@@ -65,30 +61,32 @@
 
 (defn deployed-configuration
   [cli-options om]
-  (let [installations (json/read-str (om-cli/curl om "/api/v0/installations") :key-fn keyword)]
+  (let [installations (json/read-str (om-cli/curl om "/api/v0/installations") :key-fn keyword)
+        info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)
+        opsman-version (get-in info [:info :version])]
     (cond
       (changes-being-applied? installations) (throw (ex-info "Changes are currently being applied" {}))
       (last-apply-changes-failed? installations) (throw (ex-info "The last Apply Changes failed" {}))
       :else (let [pending-changes-result (json/read-str (om-cli/curl om "/api/v0/staged/pending_changes") :key-fn keyword)]
               (match [(pending-changes/interpret pending-changes-result)]
-                [:fresh-opsman] {}
+                [:fresh-opsman] {:opsman-version opsman-version}
                 [:yes] (throw (ex-info "Changes are pending" {}))
-                [:no] (deployed-config cli-options om))))))
+                [:no] (assoc (deployed-config cli-options om)
+                             :opsman-version opsman-version))))))
 
 (s/fdef deployed-configuration
         :args (s/cat :cli-options map?
                      :om ::om-cli/om)
-        :ret ::foundation/config)
+        :ret ::foundation/deployed-config)
 
 (defn current-version
   [om deployed-config]
   (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)]
-    {:opsman_version (get-in info [:info :version])
-     :configuration_hash (format "%x" (hash deployed-config))}))
+    (format "%x" (hash deployed-config))))
 
 (s/fdef current-version
         :args (s/cat :om ::om-cli/om
-                     :deployed-config ::foundation/config)
+                     :deployed-config ::foundation/deployed-config)
         :ret ::version)
 
 (defn apply-plan
