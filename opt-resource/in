@@ -2,6 +2,6 @@
 
 set -e
 
-java -cp /concourse-pcf-foundation-resource-1.0.0-SNAPSHOT-standalone.jar \
+java -cp /concourse-pcf-foundation-resource.jar \
     clojure.main -m concourse-pcf-foundation-resource.cli \
     in "$@"

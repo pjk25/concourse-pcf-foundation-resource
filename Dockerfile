@@ -16,7 +16,7 @@ RUN ./scripts/compile.sh
 FROM openjdk:11-jre-slim
 
 COPY --from=BASE /concourse-pcf-foundation-resource/om-linux /usr/local/bin/om
-COPY --from=BASE /concourse-pcf-foundation-resource/target/concourse-pcf-foundation-resource-1.0.0-SNAPSHOT-standalone.jar /
+COPY --from=BASE /concourse-pcf-foundation-resource/target/concourse-pcf-foundation-resource.jar /
 
 RUN chmod +x /usr/local/bin/om
 
