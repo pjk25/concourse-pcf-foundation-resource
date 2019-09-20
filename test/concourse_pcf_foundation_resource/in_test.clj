@@ -26,8 +26,8 @@
   (testing "with a fresh opsman with authentication already set up"
     (let [temp-dir (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
           destination (.toString temp-dir)]
-      (is (= (in/in {:destination destination} fake-om {:version "f9164bdd"})
-             {:version "f9164bdd"
+      (is (= (in/in {:destination destination} fake-om {:version {:hash "f9164bdd"}})
+             {:version {:hash "f9164bdd"}
               :metadata []}))))
 
   (testing "when the version does not exist"
@@ -36,4 +36,4 @@
       (is (thrown? clojure.lang.ExceptionInfo
                    (in/in {:destination destination}
                           fake-om
-                          {:version "some-nonexistent-hash"}))))))
+                          {:version {:hash "some-nonexistent-hash"}}))))))

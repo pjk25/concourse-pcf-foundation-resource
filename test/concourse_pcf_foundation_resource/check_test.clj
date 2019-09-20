@@ -19,4 +19,4 @@
                       "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
                       (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
     (is (= (check/check {} fake-om {})
-           ["f9164bdd"]))))
+           [{:hash "f9164bdd"}]))))

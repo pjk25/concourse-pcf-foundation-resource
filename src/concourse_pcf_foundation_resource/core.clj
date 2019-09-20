@@ -11,7 +11,9 @@
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
-(s/def ::version string?)
+(s/def ::hash string?)
+
+(s/def ::version (s/keys :req-un [::hash]))
 
 (s/def ::name string?)
 
@@ -82,7 +84,7 @@
 (defn current-version
   [om deployed-config]
   (let [info (json/read-str (om-cli/curl om "/api/v0/info") :key-fn keyword)]
-    (format "%x" (hash deployed-config))))
+    {:hash (format "%x" (hash deployed-config))}))
 
 (s/fdef current-version
         :args (s/cat :om ::om-cli/om

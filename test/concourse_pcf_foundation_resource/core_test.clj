@@ -87,5 +87,5 @@
                         "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
                         (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
       (is (= (core/current-version fake-om {:opsman-version "2.5.4-build.189"})
-             (format "%x" (hash {:opsman-version "2.5.4-build.189"})))))))
+             {:hash (format "%x" (hash {:opsman-version "2.5.4-build.189"}))})))))
 

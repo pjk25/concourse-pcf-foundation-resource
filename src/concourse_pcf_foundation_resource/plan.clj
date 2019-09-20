@@ -109,6 +109,7 @@
                                                        (into-array FileAttribute []))
                             (.toFile)
                             (io/file "download.pivotal"))]
+      ; TODO: om download-product instead
       (if (:debug cli-options)
         (binding [*out* *err*]
           (println "\tDownloading product to " (.toString download-file))))
