@@ -14,14 +14,17 @@
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
+(s/def ::filename string?)
+
 (s/def ::dry_run boolean?)
 
-(s/def ::params (s/keys :req-un [::dry_run]))
+(s/def ::params (s/keys :req-un [::filename]
+                        :opt-un [::dry_run]))
 
 (defn out
   [cli-options om payload]
   (let [raw-deployed-config (core/deployed-configuration cli-options om)
-        raw-desired-config (yaml/parse-string (slurp (io/file (:source cli-options) "configuration.yml")))
+        raw-desired-config (yaml/parse-string (slurp (io/file (:source cli-options) (:filename (:params payload)))))
         deployed-config (s/conform ::foundation/deployed-config raw-deployed-config)
         desired-config (s/conform ::foundation/desired-config raw-desired-config)]
 
@@ -84,5 +87,5 @@
 (s/fdef out
         :args (s/cat :cli-options map?
                      :om ::om-cli/om
-                     :payload (s/keys :opt-un [::params]))
+                     :payload (s/keys :req-un [::params]))
         :ret (s/keys :req-un [::core/version ::core/metadata]))
