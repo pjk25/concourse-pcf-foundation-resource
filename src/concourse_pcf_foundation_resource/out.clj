@@ -65,7 +65,8 @@
 
     (if-let [{:keys [path]} (foundation/first-difference (util/select desired-config deployed-config)
                                                          desired-config)]
-      (println (format "Found configuration difference at %s" path)))
+      (binding [*out* *err*]
+        (println (format "Found configuration difference at %s" path))))
 
     (if-let [the-plan (plan/plan om deployed-config desired-config)]
       (if (or (empty? the-plan) (get-in payload [:params :dry_run]))
