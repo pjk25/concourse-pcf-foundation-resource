@@ -24,7 +24,7 @@
 (defn out
   [cli-options om payload]
   (let [raw-deployed-config (core/deployed-configuration cli-options om)
-        raw-desired-config (yaml/parse-string (slurp (io/file (:source cli-options) (:filename (:params payload)))))
+        raw-desired-config (yaml/parse-string (slurp (io/file (:source cli-options) (:file (:params payload)))))
         deployed-config (s/conform ::foundation/deployed-config raw-deployed-config)
         desired-config (s/conform ::foundation/desired-config raw-desired-config)]
 
