@@ -14,11 +14,11 @@
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
-(s/def ::filename string?)
+(s/def ::file string?)
 
 (s/def ::dry_run boolean?)
 
-(s/def ::params (s/keys :req-un [::filename]
+(s/def ::params (s/keys :req-un [::file]
                         :opt-un [::dry_run]))
 
 (defn out
