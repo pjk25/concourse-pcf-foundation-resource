@@ -13,4 +13,4 @@ jq -n "{
         }
     },
     \"version\": \"a-made-up-version\"
-}" | ./scripts/run.sh check
+}" | ./scripts/run.sh --debug check
