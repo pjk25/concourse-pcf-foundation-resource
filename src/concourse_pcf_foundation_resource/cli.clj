@@ -62,7 +62,8 @@
       {:exit-message (usage summary)})))
 
 (defn exit [status msg]
-  (println msg)
+  (binding [*out* *err*]
+    (println msg))
   (System/exit status))
 
 (defn -main [& args]
@@ -76,5 +77,5 @@
           (flush)
           (shutdown-agents))
         (catch Exception e
-          (if (:debug options) (.printStackTrace e))
+          (if (:debug options) (binding [*out* *err*] (.printStackTrace e)))
           (exit 1 (str "\nERROR: " e)))))))
