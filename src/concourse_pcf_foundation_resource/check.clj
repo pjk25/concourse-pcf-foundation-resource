@@ -5,8 +5,18 @@
             [concourse-pcf-foundation-resource.core :as core]
             [foundation-lib.foundation-configuration :as foundation]))
 
+(s/def ::payload (s/keys :opt-un [::core/version]))
+
 (defn check
   [cli-options om payload]
+
+  (when-not (s/valid? ::payload payload)
+    (binding [*out* *err*]
+      (println "Invalid JSON")
+      (s/explain ::payload payload)
+      (println))
+    (throw (ex-info "Invalid JSON" {})))
+
   (let [raw-deployed-config (core/deployed-configuration cli-options om)
         deployed-config (s/conform ::foundation/deployed-config raw-deployed-config)]
 
@@ -23,5 +33,5 @@
 (s/fdef check
         :args (s/cat :cli-options map?
                      :om ::om-cli/om
-                     :payload (s/keys :opt-un [::core/version]))
+                     :payload ::payload)
         :ret (s/coll-of ::core/version))

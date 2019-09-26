@@ -21,8 +21,18 @@
 (s/def ::params (s/keys :req-un [::file]
                         :opt-un [::dry_run]))
 
+(s/def ::payload (s/keys :req-un [::params]))
+
 (defn out
   [cli-options om payload]
+
+  (when-not (s/valid? ::payload payload)
+    (binding [*out* *err*]
+      (println "Invalid JSON")
+      (s/explain ::payload payload)
+      (println))
+    (throw (ex-info "Invalid JSON" {})))
+
   (let [raw-deployed-config (core/deployed-configuration cli-options om)
         raw-desired-config (yaml/parse-string (slurp (io/file (:source cli-options) (:file (:params payload)))))
         deployed-config (s/conform ::foundation/deployed-config raw-deployed-config)
@@ -88,5 +98,5 @@
 (s/fdef out
         :args (s/cat :cli-options map?
                      :om ::om-cli/om
-                     :payload (s/keys :req-un [::params]))
+                     :payload ::payload)
         :ret (s/keys :req-un [::core/version ::core/metadata]))
