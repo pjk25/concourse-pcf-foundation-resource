@@ -3,4 +3,4 @@
 set -e
 
 java -cp /concourse-pcf-foundation-resource.jar \
-    clojure.main -m concourse-pcf-foundation-resource.cli "$@"
+    concourse_pcf_foundation_resource.cli "$@"

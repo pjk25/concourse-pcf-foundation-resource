@@ -1,5 +1,7 @@
 FROM clojure:tools-deps AS BASE
 
+RUN apt-get update && apt-get install -y zip
+
 WORKDIR /concourse-pcf-foundation-resource
 
 RUN curl -LO https://github.com/pivotal-cf/om/releases/download/1.0.0/om-linux
