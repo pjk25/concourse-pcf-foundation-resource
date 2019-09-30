@@ -71,8 +71,8 @@ products:
   - product-name: foo
     version: 1.0.0
     source:
-      endpoint: https://www.foo.com
-      bucket: pivnet_files
-      file: foo-1.0.0.pivotal
-      access_key_id: FAKE_ACCESS_KEY
-      secret_access_key: FAKE_SECRET_KEY
+      pivnet-file-glob: "*.pivotal"
+      s3-endpoint: https://www.foo.com
+      s3-bucket: pivnet_files
+      s3-access-key-id: FAKE_ACCESS_KEY
+      s3-secret-access-key: FAKE_SECRET_KEY

@@ -1,6 +1,7 @@
 (ns concourse-pcf-foundation-resource.om-cli
   (:require [clojure.spec.alpha :as s]
             [clojure.java.io :as io]
+            [clojure.data.json :as json]
             [clj-yaml.core :as yaml]
             [me.raynes.conch :as sh]
             [me.raynes.conch.low-level :as sh-ll])
@@ -26,6 +27,7 @@
   (available-products [this])
   (curl [this path])
   (configure-director [this config])
+  (download-product [this config dir])
   (upload-product [this config file])
   (stage-product [this config])
   (configure-product [this config])
@@ -88,6 +90,33 @@
       (spit config-file (yaml/generate-string config))
       (sh-om-side-stream-results cli-options opsmgr "configure-director" "--config" (.toString config-file))))
 
+  (download-product [this config dir]
+    (let [source (:source config)
+          base-args ["--output-directory" (.toString dir)
+                     "--pivnet-file-glob" (:pivnet-file-glob source)
+                     "--pivnet-product-slug" (:pivnet-product-slug source)
+                     "--product-version" (:version config)]
+          additional-args (if-let [pivnet-api-token (:pivnet-api-token source)]
+                            (cond-> ["--pivnet-api-token" pivnet-api-token]
+                              (:pivnet-disable-ssl source) (conj "--pivnet-disable-ssl"))
+                            (cond-> ["--source" "s3"]
+                              (contains? source :s3-access-key-id) (conj "--s3-access-key-id" (:s3-access-key-id source))
+                              (contains? source :s3-auth-type) (conj "--s3-auth-type" (:s3-auth-type source))
+                              (contains? source :s3-bucket) (conj "--s3-bucket" (:s3-bucket source))
+                              (:s3-disable-ssl source) (conj "--s3-disable-ssl")
+                              (:s3-enable-v2-signing source) (conj "--s3-enable-v2-signing")
+                              (contains? source :s3-endpoint) (conj "--s3-endpoint" (:s3-endpoint source))
+                              (contains? source :s3-product-path) (conj "--s3-product-path" (:s3-product-path source))
+                              (contains? source :s3-region-name) (conj "--s3-region-name" (:s3-region-name source))
+                              (contains? source :s3-secret-access-key) (conj "--s3-secret-access-key" (:s3-secret-access-key))))
+          command-result (apply sh-om-side-stream-results cli-options opsmgr "download-product" (concat base-args additional-args))]
+      (if (:debug cli-options)
+        (binding [*out* *err*]
+          (println command-result))))
+    (let [metadata (json/read-str (slurp (io/file dir "download-file.json")) :key-fn keyword)
+          product-path (:product_path metadata)]
+      (io/file dir product-path)))
+
   (upload-product [this config file]
     (sh-om-side-stream-results cli-options opsmgr "upload-product" "--product-version" (:version config) "--product" file))
 
@@ -126,6 +155,11 @@
 (s/def ::product-name string?)
 
 (s/def ::version string?)
+
+(s/fdef download-product
+        :args (s/cat :this ::om
+                     :config (s/keys :req-un [::product-name ::version ::source]))
+        :ret string?)
 
 (s/fdef upload-product
         :args (s/cat :this ::om
