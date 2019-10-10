@@ -5,7 +5,9 @@
             [concourse-pcf-foundation-resource.core :as core]
             [foundation-lib.foundation-configuration :as foundation]))
 
-(s/def ::payload (s/keys :opt-un [::core/version]))
+(s/def ::version (s/or :version ::core/version :nil nil?))
+
+(s/def ::payload (s/keys :opt-un [::version]))
 
 (defn check
   [cli-options om payload]
