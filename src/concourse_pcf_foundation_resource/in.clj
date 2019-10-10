@@ -40,7 +40,8 @@
                 (println "Writing data to" (.toString config-file))))
             (spit config-file (yaml/generate-string deployed-config)))
           {:version current-version :metadata []})
-        (throw (ex-info "The requested version is no longer available." {:version requested-version}))))))
+        (throw (ex-info "The requested version is no longer available." {:requested-version requested-version
+                                                                         :current-version current-version}))))))
 
 (s/fdef in
         :args (s/cat :cli-options map?
