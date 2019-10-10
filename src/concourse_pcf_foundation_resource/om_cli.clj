@@ -1,5 +1,6 @@
 (ns concourse-pcf-foundation-resource.om-cli
-  (:require [clojure.spec.alpha :as s]
+  (:require [clojure.core.match :refer [match]]
+            [clojure.spec.alpha :as s]
             [clojure.java.io :as io]
             [clojure.data.json :as json]
             [clj-yaml.core :as yaml]
@@ -96,19 +97,26 @@
                      "--pivnet-file-glob" (:pivnet-file-glob source)
                      "--pivnet-product-slug" (:pivnet-product-slug source)
                      "--product-version" (:version config)]
-          additional-args (if-let [pivnet-api-token (:pivnet-api-token source)]
-                            (cond-> ["--pivnet-api-token" pivnet-api-token]
-                              (:pivnet-disable-ssl source) (conj "--pivnet-disable-ssl"))
-                            (cond-> ["--source" "s3"]
-                              (contains? source :s3-access-key-id) (conj "--s3-access-key-id" (:s3-access-key-id source))
-                              (contains? source :s3-auth-type) (conj "--s3-auth-type" (:s3-auth-type source))
-                              (contains? source :s3-bucket) (conj "--s3-bucket" (:s3-bucket source))
-                              (:s3-disable-ssl source) (conj "--s3-disable-ssl")
-                              (:s3-enable-v2-signing source) (conj "--s3-enable-v2-signing")
-                              (contains? source :s3-endpoint) (conj "--s3-endpoint" (:s3-endpoint source))
-                              (contains? source :s3-product-path) (conj "--s3-product-path" (:s3-product-path source))
-                              (contains? source :s3-region-name) (conj "--s3-region-name" (:s3-region-name source))
-                              (contains? source :s3-secret-access-key) (conj "--s3-secret-access-key" (:s3-secret-access-key))))
+          additional-args (match [source]
+                            [{:pivnet-api-token pivnet-api-token}] (cond-> ["--pivnet-api-token" pivnet-api-token]
+                                                                     (:pivnet-disable-ssl source) (conj "--pivnet-disable-ssl"))
+                            [{:s3-access-key-id s3-access-key-id}] (cond-> ["--source" "s3"
+                                                                            "--s3-access-key-id" s3-access-key-id]
+                                                                     (contains? source :blobstore-bucket) (conj "--blobstore-bucket" (:blobstore-bucket source))
+                                                                     (contains? source :blobstore-product-path) (conj "--blobstore-product-path" (:blobstore-product-path source))
+                                                                     (contains? source :s3-auth-type) (conj "--s3-auth-type" (:s3-auth-type source))
+                                                                     (contains? source :s3-bucket) (conj "--s3-bucket" (:s3-bucket source))
+                                                                     (:s3-disable-ssl source) (conj "--s3-disable-ssl")
+                                                                     (:s3-enable-v2-signing source) (conj "--s3-enable-v2-signing")
+                                                                     (contains? source :s3-endpoint) (conj "--s3-endpoint" (:s3-endpoint source))
+                                                                     (contains? source :s3-product-path) (conj "--s3-product-path" (:s3-product-path source))
+                                                                     (contains? source :s3-region-name) (conj "--s3-region-name" (:s3-region-name source))
+                                                                     (contains? source :s3-secret-access-key) (conj "--s3-secret-access-key" (:s3-secret-access-key)))
+                            [{:gcs-project-id gcs-project-id}] (cond-> ["--source" "gcs"
+                                                                        "--gcs-project-id" gcs-project-id]
+                                                                 (contains? source :blobstore-bucket) (conj "--blobstore-bucket" (:blobstore-bucket source))
+                                                                 (contains? source :blobstore-product-path) (conj "--blobstore-product-path" (:blobstore-product-path source))
+                                                                 (contains? source :gcs-service-account-json) (conj "--gcs-service-account-json" (:gcs-service-account-json source))))
           command-result (apply sh-om-side-stream-results cli-options opsmgr "download-product" (concat base-args additional-args))]
       (if (:debug cli-options)
         (binding [*out* *err*]

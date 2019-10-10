@@ -5,7 +5,7 @@
         clj-commons/clj-yaml        {:mvn/version "0.7.0"}
         me.raynes/conch             {:mvn/version "0.8.0"}
         pjk25/foundation-lib        {:git/url "https://github.com/pjk25/foundation-lib"
-                                     :sha "351bbaf255831cab154e1f01c2bffcfc88bb11df"}}
+                                     :sha "0204e0f7e4560541c31eb3fa3710b5ab52d4d940"}}
  :paths ["src" "classes"]
  :aliases {:test {:extra-paths ["test"]
                   :extra-deps {org.clojure/test.check {:mvn/version "0.9.0"}
