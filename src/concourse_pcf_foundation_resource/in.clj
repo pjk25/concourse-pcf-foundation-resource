@@ -15,10 +15,10 @@
 
   (when-not (s/valid? ::payload payload)
     (binding [*out* *err*]
-      (println "Invalid JSON")
+      (println "Invalid request body")
       (s/explain ::payload payload)
       (println))
-    (throw (ex-info "Invalid JSON" {})))
+    (throw (ex-info "Invalid request body" payload)))
 
   (let [requested-version (:version payload)
         raw-deployed-config (core/deployed-configuration cli-options om)
