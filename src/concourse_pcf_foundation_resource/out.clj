@@ -90,6 +90,7 @@
             (println "Computed plan:")
             (println (plan/describe-plan the-plan) "\n"))
           (core/apply-plan cli-options om the-plan)
+          (Thread/sleep (.toMillis java.util.concurrent.TimeUnit/SECONDS 30))
           (let [redeployed-config (core/deployed-configuration cli-options om)
                 current-version (core/current-version om redeployed-config)]
             {:version current-version :metadata []})))
