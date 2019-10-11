@@ -105,13 +105,12 @@
                                                                      (contains? source :blobstore-bucket) (conj "--blobstore-bucket" (:blobstore-bucket source))
                                                                      (contains? source :blobstore-product-path) (conj "--blobstore-product-path" (:blobstore-product-path source))
                                                                      (contains? source :s3-auth-type) (conj "--s3-auth-type" (:s3-auth-type source))
-                                                                     (contains? source :s3-bucket) (conj "--s3-bucket" (:s3-bucket source))
                                                                      (:s3-disable-ssl source) (conj "--s3-disable-ssl")
                                                                      (:s3-enable-v2-signing source) (conj "--s3-enable-v2-signing")
                                                                      (contains? source :s3-endpoint) (conj "--s3-endpoint" (:s3-endpoint source))
                                                                      (contains? source :s3-product-path) (conj "--s3-product-path" (:s3-product-path source))
                                                                      (contains? source :s3-region-name) (conj "--s3-region-name" (:s3-region-name source))
-                                                                     (contains? source :s3-secret-access-key) (conj "--s3-secret-access-key" (:s3-secret-access-key)))
+                                                                     (contains? source :s3-secret-access-key) (conj "--s3-secret-access-key" (:s3-secret-access-key source)))
                             [{:gcs-project-id gcs-project-id}] (cond-> ["--source" "gcs"
                                                                         "--gcs-project-id" gcs-project-id]
                                                                  (contains? source :blobstore-bucket) (conj "--blobstore-bucket" (:blobstore-bucket source))
