@@ -121,9 +121,8 @@
       (if (:debug cli-options)
         (binding [*out* *err*]
           (println command-result))))
-    (let [metadata (json/read-str (slurp (io/file dir "download-file.json")) :key-fn keyword)
-          product-path (:product_path metadata)]
-      (io/file dir product-path)))
+    (let [metadata (json/read-str (slurp (io/file dir "download-file.json")) :key-fn keyword)]
+      (:product_path metadata)))
 
   (upload-product [this config file]
     (sh-om-side-stream-results cli-options opsmgr "upload-product" "--product-version" (:version config) "--product" file))
