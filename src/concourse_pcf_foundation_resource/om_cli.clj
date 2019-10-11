@@ -92,6 +92,7 @@
       (sh-om-side-stream-results cli-options opsmgr "configure-director" "--config" (.toString config-file))))
 
   (download-product [this config dir]
+    (io/make-parents (io/file dir "example.pivotal"))
     (let [source (:source config)
           base-args ["--output-directory" (.toString dir)
                      "--pivnet-file-glob" (:pivnet-file-glob source)
