@@ -95,7 +95,7 @@
     (let [source (:source config)
           base-args ["--output-directory" (.toString dir)
                      "--pivnet-file-glob" (:pivnet-file-glob source)
-                     "--pivnet-product-slug" (:pivnet-product-slug source)
+                     "--pivnet-product-slug" (:product-name config)
                      "--product-version" (:version config)]
           additional-args (match [source]
                             [{:pivnet-api-token pivnet-api-token}] (cond-> ["--pivnet-api-token" pivnet-api-token]
