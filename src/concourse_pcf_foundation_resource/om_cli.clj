@@ -165,7 +165,8 @@
 
 (s/fdef download-product
         :args (s/cat :this ::om
-                     :config (s/keys :req-un [::product-name ::version ::source]))
+                     :config (s/keys :req-un [::product-name ::version ::source])
+                     :dir (partial instance? java.io.File))
         :ret string?)
 
 (s/fdef upload-product

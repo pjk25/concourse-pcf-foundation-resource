@@ -112,7 +112,7 @@
       (let [product-file (om-cli/download-product om config download-dir)]
         (if (:debug cli-options)
           (binding [*out* *err*]
-            (println "\tUploading product from " (.toString product-file))))
+            (println "\tUploading product from " product-file)))
         (om-cli/upload-product om config product-file)))))
 
 (defmethod executor :stage-product [step]
