@@ -90,10 +90,11 @@
             (println "Computed plan:")
             (println (plan/describe-plan the-plan) "\n"))
           (core/apply-plan cli-options om the-plan)
-          (Thread/sleep (.toMillis java.util.concurrent.TimeUnit/SECONDS 30))
+          (binding [*out* *err*]
+            (println "Recomputing deployed version..."))
           (let [redeployed-config (core/deployed-configuration cli-options om)
-                current-version (core/current-version om redeployed-config)]
-            {:version current-version :metadata []})))
+                new-version (core/current-version om redeployed-config)]
+            {:version new-version :metadata []})))
       (throw (ex-info "Cannot formulate a suitable plan that converges towards the desired foundation state" {})))))
 
 (s/fdef out
