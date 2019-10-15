@@ -1,7 +1,7 @@
 (ns concourse-pcf-foundation-resource.query.product
   (:require [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
-            [foundation-lib.foundation-configuration :as foundation]
+            [foundation-lib.desired-configuration :as desired-configuration]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]))
 
 (s/def ::state #{:none :deployed :staged :uploaded})
@@ -39,5 +39,5 @@
 
 (s/fdef state
         :args (s/cat :om ::om-cli/om
-                     :product-config ::foundation/product-config)
+                     :product-config ::desired-configuration/desired-product-config)
         :ret ::state)

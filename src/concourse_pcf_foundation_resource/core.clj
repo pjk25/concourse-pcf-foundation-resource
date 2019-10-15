@@ -2,7 +2,8 @@
   (:require [clojure.core.match :refer [match]]
             [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
-            [foundation-lib.foundation-configuration :as foundation]
+            [foundation-lib.query :as foundation-query]
+            [foundation-lib.deployed-configuration :as foundation-deployed-configuration]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.digest :as digest]
             [concourse-pcf-foundation-resource.plan :as plan]
@@ -59,7 +60,7 @@
         product-configs (map #(product-config cli-options om %) deployed-products)
         full-config (cond-> {:director-config director-config}
                       (seq product-configs) (assoc :products product-configs))]
-    (foundation/select-writable-config full-config)))
+    (foundation-query/select-writable-config full-config)))
 
 (defn deployed-configuration
   [cli-options om]
@@ -79,7 +80,7 @@
 (s/fdef deployed-configuration
         :args (s/cat :cli-options map?
                      :om ::om-cli/om)
-        :ret ::foundation/deployed-config)
+        :ret ::foundation-deployed-configuration/deployed-config)
 
 (defn current-version
   [om deployed-config]
@@ -88,7 +89,7 @@
 
 (s/fdef current-version
         :args (s/cat :om ::om-cli/om
-                     :deployed-config ::foundation/deployed-config)
+                     :deployed-config ::foundation-deployed-configuration/deployed-config)
         :ret ::version)
 
 (defn apply-plan

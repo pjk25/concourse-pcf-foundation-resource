@@ -12,11 +12,13 @@
                     (deployed-products [this]
                       (slurp "resources/fixtures/deployed-products/just_director.json")))]
       (is (= :deployed (product/state fake-om {:product-name "p-bosh"
-                                               :version "2.5.4-build.189"})))))
+                                               :version "2.5.4-build.189"
+                                               :source {:pivnet-file-glob "*.pivotal"}})))))
 
   (comment (testing "when the product is deployed at the wrong version, but has been uploaded and staged at the correct one"
              (let [fake-om (reify om-cli/Om
                              (deployed-products [this]
                                (slurp "resources/fixtures/deployed-products/just_director.json")))]
                (is (= :deployed (product/state fake-om {:product-name "p-bosh"
-                                                        :version "2.5.4-build.189"})))))))
+                                                        :version "2.5.4-build.189"
+                                                        :source {:pivnet-file-glob "*.pivotal"}})))))))

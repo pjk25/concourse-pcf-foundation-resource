@@ -6,7 +6,7 @@
             [concourse-pcf-foundation-resource.core :as core]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.digest :as digest]
-            [foundation-lib.foundation-configuration :as foundation]))
+            [foundation-lib.deployed-configuration :as deployed-configuration]))
 
 (s/def ::payload (s/keys :req-un [::core/version]))
 
@@ -22,12 +22,12 @@
 
   (let [requested-version (:version payload)
         raw-deployed-config (core/deployed-configuration cli-options om)
-        deployed-config (s/conform ::foundation/deployed-config raw-deployed-config)]
+        deployed-config (s/conform ::deployed-configuration/deployed-config raw-deployed-config)]
 
     (when (= ::s/invalid deployed-config)
       (binding [*out* *err*]
         (println "Internal inconsistency: The deployed foundation configuration is not valid")
-        (s/explain ::foundation/deployed-config raw-deployed-config)
+        (s/explain ::deployed-configuration/deployed-config raw-deployed-config)
         (println))
       (throw (ex-info "Internal inconsistency: The deployed foundation configuration is not valid" {})))
 

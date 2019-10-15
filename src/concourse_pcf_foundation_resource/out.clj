@@ -4,9 +4,11 @@
             [clojure.java.io :as io]
             [clojure.java.shell :as shell]
             [clojure.pprint :refer [pprint]]
+            [foundation-lib.query :as foundation-query]
+            [foundation-lib.deployed-configuration :as foundation-deployed-configuration]
+            [foundation-lib.desired-configuration :as foundation-desired-configuration]
             [concourse-pcf-foundation-resource.core :as core]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
-            [foundation-lib.foundation-configuration :as foundation]
             [concourse-pcf-foundation-resource.digest :as digest]
             [concourse-pcf-foundation-resource.plan :as plan]
             [foundation-lib.util :as util]
@@ -35,8 +37,8 @@
 
   (let [raw-deployed-config (core/deployed-configuration cli-options om)
         raw-desired-config (yaml/parse-string (slurp (io/file (:source cli-options) (:file (:params payload)))))
-        deployed-config (s/conform ::foundation/deployed-config raw-deployed-config)
-        desired-config (s/conform ::foundation/desired-config raw-desired-config)]
+        deployed-config (s/conform ::foundation-deployed-configuration/deployed-config raw-deployed-config)
+        desired-config (s/conform ::foundation-desired-configuration/desired-config raw-desired-config)]
 
     (let [config-dir (-> (Files/createTempDirectory "concourse-pcf-foundation-resource-"
                                                     (into-array FileAttribute []))
@@ -54,27 +56,27 @@
     (when (= ::s/invalid deployed-config)
       (binding [*out* *err*]
         (println "Internal inconsistency: The deployed foundation configuration is not valid")
-        (s/explain ::foundation/deployed-config raw-deployed-config)
+        (s/explain ::foundation-deployed-configuration/deployed-config raw-deployed-config)
         (println))
       (throw (ex-info "Internal inconsistency: The deployed foundation configuration is not valid" {})))
 
     (when (= ::s/invalid desired-config)
       (binding [*out* *err*]
         (println "The supplied foundation configuration is not valid")
-        (s/explain ::foundation/desired-config raw-desired-config)
+        (s/explain ::foundation-desired-configuration/desired-config raw-desired-config)
         (println))
       (throw (ex-info "The supplied foundation configuration is not valid" {})))
 
     ; TODO: reject configs where the opsman-version is given and wrong
-    (let [extra-config (util/structural-minus desired-config (foundation/select-writable-config desired-config))]
+    (let [extra-config (util/structural-minus desired-config (foundation-query/select-writable-config desired-config))]
       (when-not (empty? extra-config)
         (binding [*out* *err*]
           (println "The supplied foundation configuration contains extraneous data:")
           (pprint extra-config))
         (throw (ex-info "The supplied foundation configuration contains extraneous data" {}))))
 
-    (if-let [{:keys [path]} (foundation/first-difference (util/select desired-config deployed-config)
-                                                         desired-config)]
+    (if-let [{:keys [path]} (foundation-query/first-difference (util/select desired-config deployed-config)
+                                                               desired-config)]
       (binding [*out* *err*]
         (println (format "Found configuration difference at %s" path))))
 
@@ -101,4 +103,5 @@
         :args (s/cat :cli-options map?
                      :om ::om-cli/om
                      :payload ::payload)
-        :ret (s/keys :req-un [::core/version ::core/metadata]))
+        :ret (s/keys :req-un [::core/version
+                              ::core/metadata]))

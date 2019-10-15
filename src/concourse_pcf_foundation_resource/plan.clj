@@ -3,7 +3,9 @@
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [clojure.java.io :as io]
-            [foundation-lib.foundation-configuration :as foundation]
+            [foundation-lib.query :as foundation-query]
+            [foundation-lib.deployed-configuration :as foundation-deployed-configuration]
+            [foundation-lib.desired-configuration :as foundation-desired-configuration]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.query.product :as product])
   (:import [java.nio.file Files]
@@ -41,13 +43,13 @@
 
 (defn- director-plan
   [deployed-director-config desired-director-config]
-  (if (foundation/requires-changes? deployed-director-config desired-director-config)
+  (if (foundation-query/director-requires-changes? deployed-director-config desired-director-config)
     (deploy-director-plan desired-director-config)
     []))
 
 (defn- product-plan
   [om deployed-config desired-config]
-  (if (foundation/requires-changes? deployed-config desired-config)
+  (if (foundation-query/product-requires-changes? deployed-config desired-config)
     (deploy-product-plan om desired-config)
     []))
 
@@ -88,8 +90,8 @@
 
 (s/fdef plan
         :args (s/cat :om ::om-cli/om
-                     :deployed-config ::foundation/deployed-config
-                     :desired-config ::foundation/desired-config)
+                     :deployed-config ::foundation-deployed-configuration/deployed-config
+                     :desired-config ::foundation-desired-configuration/desired-config)
         :ret ::plan)
 
 ; TODO: make this multiple arity like virtual-apply-plan
