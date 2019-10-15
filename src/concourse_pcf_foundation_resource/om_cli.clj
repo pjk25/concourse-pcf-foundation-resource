@@ -125,7 +125,7 @@
       (:product_path metadata)))
 
   (upload-product [this config file]
-    (sh-om-side-stream-results cli-options opsmgr "upload-product" "--product-version" (:version config) "--product" file))
+    (sh-om-side-stream-results cli-options opsmgr "upload-product" "--product" file))
 
   (stage-product [this config]
     (sh-om cli-options opsmgr "stage-product" "--product-name" (:product-name config) "--product-version" (:version config)))
