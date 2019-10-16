@@ -30,7 +30,7 @@
   (configure-director [this config])
   (download-product [this config dir])
   (upload-product [this config file])
-  (stage-product [this config])
+  (stage-product [this config exact-version])
   (configure-product [this config])
   (apply-changes [this options]))
 
@@ -127,8 +127,8 @@
   (upload-product [this config file]
     (sh-om-side-stream-results cli-options opsmgr "upload-product" "--product" file))
 
-  (stage-product [this config]
-    (sh-om cli-options opsmgr "stage-product" "--product-name" (:product-name config) "--product-version" (:version config)))
+  (stage-product [this config exact-version]
+    (sh-om cli-options opsmgr "stage-product" "--product-name" (:product-name config) "--product-version" exact-version))
 
   (configure-product [this config]
     (let [config-file (-> (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
@@ -177,7 +177,8 @@
 
 (s/fdef stage-product
         :args (s/cat :this ::om
-                     :config (s/keys :req-un [::product-name ::version]))
+                     :config (s/keys :req-un [::product-name])
+                     :exact-version string?)
         :ret string?)
 
 (s/fdef configure-product

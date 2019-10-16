@@ -3,6 +3,7 @@
             [clojure.spec.alpha :as s]
             [clojure.string :as string]
             [clojure.java.io :as io]
+            [clojure.data.json :as json]
             [foundation-lib.query :as foundation-query]
             [foundation-lib.deployed-configuration :as foundation-deployed-configuration]
             [foundation-lib.desired-configuration :as foundation-desired-configuration]
@@ -119,7 +120,12 @@
 
 (defmethod executor :stage-product [step]
   (fn [cli-options om]
-    (om-cli/stage-product om (::config step))))
+    (let [available-products (json/read-str (om-cli/available-products om) :key-fn keyword)
+          config (:config step)
+          exact-version (some #(and (= (:name %) (:product-name config))
+                                    (string/starts-with? (:version %) (:version config)))
+                              available-products)]
+      (om-cli/stage-product om (::config step) exact-version))))
 
 (defmethod executor :configure-product [step]
   (fn [cli-options om]
