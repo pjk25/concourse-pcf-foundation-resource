@@ -6,6 +6,19 @@
             [concourse-pcf-foundation-resource.plan :as plan]
             [clj-yaml.core :as yaml]))
 
+(deftest executor
+  (testing "stage-product"
+    (let [fake-om (reify om-cli/Om
+                    (available-products [this] "[{\"name\": \"p-healthwatch\",\"version\": \"1.6.3-build.3\"}]")
+                    (stage-product [this config exact-version]
+                      (assert (= "1.6.3-build.3" exact-version))
+                      "success"))]
+      (is (= ((plan/executor {::plan/action :stage-product
+                              ::plan/config {:product-name "p-healthwatch"
+                                             :version "1.6.3"
+                                             :source {:pivnet-file-glob "*.pivotal"}}}) {} fake-om)
+             "success")))))
+
 (deftest plan
   (stest/instrument `plan/plan)
 

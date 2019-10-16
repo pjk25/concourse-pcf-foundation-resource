@@ -121,10 +121,10 @@
 (defmethod executor :stage-product [step]
   (fn [cli-options om]
     (let [available-products (json/read-str (om-cli/available-products om) :key-fn keyword)
-          config (:config step)
-          matching-product (some #(and (= (:name %) (:product-name config))
-                                       (string/starts-with? (:version %) (:version config)))
-                                 available-products)]
+          config (::config step)
+          matching-product (first (filter #(and (= (:name %) (:product-name config))
+                                                (string/starts-with? (:version %) (:version config)))
+                                          available-products))]
       (om-cli/stage-product om (::config step) (:version matching-product)))))
 
 (defmethod executor :configure-product [step]
