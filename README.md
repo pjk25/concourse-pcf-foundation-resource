@@ -9,6 +9,8 @@ If there are any changes being applied, or there are saved changes not yet appli
 
 Additionally, while it may be feasible to cache past versions in the resource container, since historic configs are not available through the OpsMan API, this resource only reports the current version.
 
+Foundation configurations are described by the specs in https://github.com/pjk25/foundation-lib
+
 ## Source Configuration
 ```yaml
 opsmgr:
@@ -26,6 +28,18 @@ opsmgr:
 
 hash of the opsman configuration manfiest
 
+versions look like this:
+
+```json
+{
+    "version": {
+        "hash": "abcd1234"
+    },
+    "metadata": []
+}
+```
+
+
 ### in
 
 - configuration.yml
@@ -34,30 +48,64 @@ Example configuration.yml:
 
 ```yaml
 ---
+opsman-version: 2.5.0
 director-config:
-    foo: to-the-bar
+    properties-configuration:
+    director_configuration:
+      allow_legacy_agents: true
+      blobstore_type: local
+products:
+- product-name: cf
+  version: 2.5.0
+  source:
+    pivnet-file-glob: "srt*.pivotal"
+    pivnet-api-token: YOUR-PIVNET-TOKEN
+  product-properties:
+    .cloud_controller.apps_domain:
+      value: apps.my-foundation.com
 ```
-
-Example response:
-
-```json
-{
-    "version": {
-        "opsman_version": "2.5.4-build.189",
-        "configuration_hash": ""
-    },
-    "metadata": []
-}
-```
-
-If this is a fresh OpsMan with nothing deployed, then `configuration_hash` will be omitted, and `configuration.yml` will not be written.
 
 ### out
 
-- configuration.yml
-
 params:
 
+file: path-to-foundation-config-yaml
 dry_run: false|true
 
 This only makes changes if what's there differs, things not specified are assumed floating
+
+## example pipeline
+
+```yaml
+resource_types:
+- name: foundation
+  type: docker-image
+  source:
+    repository: pkuryloski/concourse-pcf-foundation-resource
+  check_every: 10m
+
+resources:
+- name: incremental-config
+  type: gcs-resource
+  source:
+    bucket: sbx-config
+    json_key: ((gcs-key))
+    versioned_file: foundation-config.yml
+- name: foundation
+  type: foundation
+  source:
+    opsmgr:
+      url: pcf.my-foundation.com
+      username: ((opsman.username))
+      password: ((opsman.password))
+      skip_ssl_validation: true
+
+- name: apply-incremental-config
+  serial: true
+  plan:
+  - get: incremental-config
+    trigger: true
+  - put: foundation
+    params:
+      file: incremental-config/foundation-config.yml
+```
