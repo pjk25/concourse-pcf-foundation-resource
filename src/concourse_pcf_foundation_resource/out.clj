@@ -94,6 +94,7 @@
           (core/apply-plan cli-options om the-plan)
           (binding [*out* *err*]
             (println "Recomputing deployed version..."))
+          (Thread/sleep (.toMillis java.util.concurrent.TimeUnit/SECONDS 90))
           (let [redeployed-config (core/deployed-configuration cli-options om)
                 new-version (core/current-version om redeployed-config)]
             {:version new-version :metadata []})))
