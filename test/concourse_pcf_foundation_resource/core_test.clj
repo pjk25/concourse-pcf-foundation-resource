@@ -66,12 +66,15 @@
                         "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
                         "/api/v0/installations" (slurp "resources/fixtures/curl/installations/success.json")
                         "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/director_deployed.json")
-                        (throw (ex-info (slurp "resources/fixtures/curl_not_found.html") {:path path})))))]
+                        "/api/v0/stemcell_assignments" (slurp "resources/fixtures/curl/stemcell_assignments/missing_stemcell.json")
+                        (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))]
       (is (= (keys (core/deployed-configuration {} fake-om))
              [:director-config :products :opsman-version]))
       (is (= (:products (core/deployed-configuration {} fake-om))
              [{:product-name "cf"
-               :version "2.5.4"}])))))
+               :version "2.5.4"
+               :stemcells [{:version "250.48"
+                            :os "ubuntu-xenial"}]}])))))
 
 (deftest current-version
   (stest/instrument `core/current-version)

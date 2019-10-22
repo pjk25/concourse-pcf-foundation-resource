@@ -76,3 +76,9 @@ products:
       s3-bucket: pivnet_files
       s3-access-key-id: FAKE_ACCESS_KEY
       s3-secret-access-key: FAKE_SECRET_KEY
+    stemcells:
+    - version: "250.49"
+      os: ubuntu-xenial
+      source:
+        pivnet-product-slug: stemcells-ubuntu-xenial
+        pivnet-file-glob: "*google*"

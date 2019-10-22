@@ -29,7 +29,8 @@
   (curl [this path])
   (configure-director [this config])
   (download-product [this config dir])
-  (upload-product [this config file])
+  (upload-stemcell [this file])
+  (upload-product [this file])
   (stage-product [this config exact-version])
   (configure-product [this config])
   (apply-changes [this options]))
@@ -125,7 +126,10 @@
     (let [metadata (json/read-str (slurp (io/file dir "download-file.json")) :key-fn keyword)]
       (:product_path metadata)))
 
-  (upload-product [this config file]
+  (upload-stemcell [this file]
+    (sh-om-side-stream-results cli-options opsmgr "upload-stemcell" "--floating" "false" "--stemcell" file))
+
+  (upload-product [this file]
     (sh-om-side-stream-results cli-options opsmgr "upload-product" "--product" file))
 
   (stage-product [this config exact-version]
@@ -170,9 +174,13 @@
                      :dir (partial instance? java.io.File))
         :ret string?)
 
+(s/fdef upload-stemcell
+        :args (s/cat :this ::om
+                     :file string?)
+        :ret string?)
+
 (s/fdef upload-product
         :args (s/cat :this ::om
-                     :config (s/keys :req-un [::product-name ::version])
                      :file string?)
         :ret string?)
 

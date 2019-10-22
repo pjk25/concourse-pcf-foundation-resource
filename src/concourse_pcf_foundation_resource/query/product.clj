@@ -4,7 +4,7 @@
             [foundation-lib.desired-configuration :as desired-configuration]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]))
 
-(s/def ::state #{:none :deployed :staged :uploaded})
+(s/def ::state #{:none :uploaded :staged :deployed})
 
 (defn- deployed-products
   [om]

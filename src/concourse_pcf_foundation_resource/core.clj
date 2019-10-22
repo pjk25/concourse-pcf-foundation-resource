@@ -47,17 +47,25 @@
       (dissoc :iaas-configurations)))
 
 (defn- product-config
-  [cli-options om deployed-product]
+  [cli-options om stemcell-assignments deployed-product]
   (let [{:keys [name version]} deployed-product
-        product-config (yaml/parse-string (om-cli/staged-config om name))]
-    (assoc product-config :version version)))
+        product-config (yaml/parse-string (om-cli/staged-config om name))
+        stemcell-assignment (->> stemcell-assignments
+                                 (:products)
+                                 (filter #(= name (:identifier %)))
+                                 (first))]
+    (-> product-config
+        (assoc :version version)
+        (assoc :stemcells [{:version (:deployed_stemcell_version stemcell-assignment)
+                            :os (:required_stemcell_os stemcell-assignment)}]))))
 
 (defn- deployed-config
   [cli-options om]
-  (let [director-config (fixup-staged-director-config (yaml/parse-string (om-cli/staged-director-config om)))
+  (let [stemcell-assignments (json/read-str (om-cli/curl om "/api/v0/stemcell_assignments") :key-fn keyword)
+        director-config (fixup-staged-director-config (yaml/parse-string (om-cli/staged-director-config om)))
         deployed-products (remove #(= "p-bosh" (:name %))
                                   (json/read-str (om-cli/deployed-products om) :key-fn keyword))
-        product-configs (map #(product-config cli-options om %) deployed-products)
+        product-configs (map #(product-config cli-options om stemcell-assignments %) deployed-products)
         full-config (cond-> {:director-config director-config}
                       (seq product-configs) (assoc :products product-configs))]
     (foundation-query/select-writable-config full-config)))

@@ -1,0 +1,56 @@
+{
+  "products": [
+    {
+      "guid": "p-bosh-24fc7d31572981149981",
+      "identifier": "p-bosh",
+      "label": "BOSH Director",
+      "staged_product_version": "2.5.4-build.189",
+      "deployed_product_version": "2.5.4-build.189",
+      "is_staged_for_deletion": false,
+      "staged_stemcell_version": "250.48",
+      "deployed_stemcell_version": "250.48",
+      "available_stemcell_versions": [
+        "250.48"
+      ],
+      "required_stemcell_version": "250.48",
+      "required_stemcell_os": "ubuntu-xenial"
+    },
+    {
+      "guid": "cf-bba190fc38777cc3173b",
+      "identifier": "cf",
+      "label": "Small Footprint PAS",
+      "staged_product_version": "2.5.4",
+      "deployed_product_version": "2.5.4",
+      "is_staged_for_deletion": false,
+      "staged_stemcell_version": "250.48",
+      "deployed_stemcell_version": "250.48",
+      "available_stemcell_versions": [
+        "250.48"
+      ],
+      "required_stemcell_version": "250.38",
+      "required_stemcell_os": "ubuntu-xenial"
+    },
+    {
+      "guid": "apmPostgres-0b4db92ae6c6b69e7d39",
+      "identifier": "apmPostgres",
+      "label": "Metrics",
+      "staged_product_version": "1.6.1-build.74",
+      "deployed_product_version": null,
+      "is_staged_for_deletion": false,
+      "staged_stemcell_version": null,
+      "deployed_stemcell_version": null,
+      "available_stemcell_versions": [],
+      "required_stemcell_version": "170.30",
+      "required_stemcell_os": "ubuntu-xenial"
+    }
+  ],
+  "stemcell_library": [
+    {
+      "version": "250.48",
+      "os": "ubuntu-xenial",
+      "infrastructure": "google",
+      "hypervisor": "kvm",
+      "light": true
+    }
+  ]
+}

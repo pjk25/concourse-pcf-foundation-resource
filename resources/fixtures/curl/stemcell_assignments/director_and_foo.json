@@ -1,0 +1,43 @@
+{
+  "products": [
+    {
+      "guid": "p-bosh-24fc7d31572981149981",
+      "identifier": "p-bosh",
+      "label": "BOSH Director",
+      "staged_product_version": "2.5.4-build.189",
+      "deployed_product_version": "2.5.4-build.189",
+      "is_staged_for_deletion": false,
+      "staged_stemcell_version": "250.49",
+      "deployed_stemcell_version": "250.49",
+      "available_stemcell_versions": [
+        "250.49"
+      ],
+      "required_stemcell_version": "250.49",
+      "required_stemcell_os": "ubuntu-xenial"
+    },
+    {
+      "guid": "foo-bba190fc38777cc3173b",
+      "identifier": "foo",
+      "label": "Pivotal Foo",
+      "staged_product_version": "1.0.0",
+      "deployed_product_version": "1.0.0",
+      "is_staged_for_deletion": false,
+      "staged_stemcell_version": "250.49",
+      "deployed_stemcell_version": "250.49",
+      "available_stemcell_versions": [
+        "250.49"
+      ],
+      "required_stemcell_version": "250.38",
+      "required_stemcell_os": "ubuntu-xenial"
+    }
+  ],
+  "stemcell_library": [
+    {
+      "version": "250.49",
+      "os": "ubuntu-xenial",
+      "infrastructure": "google",
+      "hypervisor": "kvm",
+      "light": true
+    }
+  ]
+}

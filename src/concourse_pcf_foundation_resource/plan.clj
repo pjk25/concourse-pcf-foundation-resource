@@ -13,6 +13,7 @@
            [java.nio.file.attribute FileAttribute]))
 
 (s/def ::action #{:configure-director
+                  :upload-stemcell
                   :upload-product
                   :stage-product
                   :configure-product
@@ -58,14 +59,30 @@
   [name products]
   (first (filter #(= name (:product-name %)) products)))
 
+(defn- upload-stemcells-plan
+  [stemcell-assignments product-config-pairs]
+  (let [available-stemcells (:stemcell_library stemcell-assignments)
+        desired-products (filter boolean (map :desired product-config-pairs))
+        declared-stemcells (apply concat (map :stemcells desired-products))
+        is-available? (fn [declared-stemcell]
+                        (some #(and (= (:version declared-stemcell)
+                                       (:version %))
+                                    (= (:os declared-stemcell)
+                                       (:os %))) available-stemcells))
+        missing-stemcells (remove is-available? declared-stemcells)]
+    (map #(hash-map ::action :upload-stemcell
+                    ::config %) missing-stemcells)))
+
 (defn- product-plans
   [om deployed-products desired-products]
-  (let [sorted-product-names (sort (distinct (map :product-name desired-products))) ; only what's desired - no support for delete yet
+  (let [stemcell-assignments (json/read-str (om-cli/curl om "/api/v0/stemcell_assignments") :key-fn keyword)
+        sorted-product-names (sort (distinct (map :product-name desired-products))) ; only what's desired - no support for delete yet
         collect-product-configs-fn (fn [name] {:name name
                                                :deployed (find-product-with-name name deployed-products)
                                                :desired (find-product-with-name name desired-products)})
         product-config-pairs (map collect-product-configs-fn sorted-product-names)]
-    (map #(product-plan om (:deployed %) (:desired %)) product-config-pairs)))
+    (cons (upload-stemcells-plan stemcell-assignments product-config-pairs)
+          (map #(product-plan om (:deployed %) (:desired %)) product-config-pairs))))
 
 (defn- with-apply-changes
   [other-steps]
@@ -102,6 +119,22 @@
   (fn [cli-options om]
     (om-cli/configure-director om (::config step))))
 
+(defmethod executor :upload-stemcell [step]
+  (fn [cli-options om]
+    (let [config (::config step)
+          source (:source config)
+          download-dir (-> (io/file "product-downloads")
+                           (io/file (:product-name config))
+                           (io/file (:version config)))]
+      (if (:debug cli-options)
+        (binding [*out* *err*]
+          (println "\tDownloading stemcell to " (.toString download-dir))))
+      (let [product-file (om-cli/download-product om config download-dir)]
+        (if (:debug cli-options)
+          (binding [*out* *err*]
+            (println "\tUploading stemcell from " product-file)))
+        (om-cli/upload-stemcell om product-file)))))
+
 (defmethod executor :upload-product [step]
   (fn [cli-options om]
     (let [config (::config step)
@@ -116,7 +149,7 @@
         (if (:debug cli-options)
           (binding [*out* *err*]
             (println "\tUploading product from " product-file)))
-        (om-cli/upload-product om config product-file)))))
+        (om-cli/upload-product om product-file)))))
 
 (defmethod executor :stage-product [step]
   (fn [cli-options om]
@@ -129,6 +162,7 @@
 
 (defmethod executor :configure-product [step]
   (fn [cli-options om]
+    ;TODO: assign stemcells if necessary
     (om-cli/configure-product om (::config step))))
 
 (defmethod executor :apply-changes [step]
@@ -145,6 +179,9 @@
 
 (defmethod description :configure-director [step]
   (str "Configure the director tile"))
+
+(defmethod description :upload-stemcell [step]
+  (str "Upload stemcell " (:os (::config step)) " " (:version (::config step))))
 
 (defmethod description :upload-product [step]
   (str "Upload product " (:product-name (::config step)) " " (:version (::config step))))
