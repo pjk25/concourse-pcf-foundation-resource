@@ -70,11 +70,6 @@ director-config:
 products:
   - product-name: foo
     version: 1.0.0
-    source:
-      pivnet-file-glob: "*.pivotal"
     stemcells:
     - version: "250.49"
       os: ubuntu-xenial
-      source:
-        pivnet-product-slug: stemcells-ubuntu-xenial
-        pivnet-file-glob: "*google*"

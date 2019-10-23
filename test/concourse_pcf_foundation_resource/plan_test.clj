@@ -4,7 +4,9 @@
             [clojure.spec.test.alpha :as stest]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]
             [concourse-pcf-foundation-resource.plan :as plan]
-            [clj-yaml.core :as yaml]))
+            [clj-yaml.core :as yaml]
+            [foundation-lib.deployed-configuration :as deployed-configuration]
+            [foundation-lib.desired-configuration :as desired-configuration]))
 
 (deftest executor
   (testing "stage-product"
@@ -66,7 +68,11 @@
                     (staged-director-config [this]
                       (slurp "resources/fixtures/staged-director-config.yml"))
                     (deployed-products [this]
-                      (slurp "resources/fixtures/deployed-products/just_director.json"))
+                      "[{\"name\":\"foo\",\"version\":\"1.0.0\"}]")
+                    (available-products [this]
+                      "[{\"name\":\"foo\",\"version\":\"1.0.0\"}]")
+                    (staged-products [this]
+                      "[{\"name\":\"foo\",\"version\":\"1.0.0\"}]")
                     (curl [this path]
                       (condp = path
                         "/api/v0/info" (slurp "resources/fixtures/curl/info.json")
@@ -74,7 +80,11 @@
                         "/api/v0/staged/pending_changes" (slurp "resources/fixtures/curl/pending_changes/fresh_opsman.json")
                         "/api/v0/stemcell_assignments" (slurp "resources/fixtures/curl/stemcell_assignments/director_and_foo.json")
                         (throw (ex-info (slurp "resources/fixtures/curl/not_found.html") {:path path})))))
-          desired-config (yaml/parse-string (slurp "resources/fixtures/desired-config/configuration.yml")
-                                            :key-fn keyword)]
-      (is (s/valid? ::plan/plan (plan/plan fake-om desired-config desired-config)))
-      (is (= [] (plan/plan fake-om desired-config desired-config))))))
+          deployed-config (s/conform ::deployed-configuration/deployed-config
+                                     (yaml/parse-string (slurp "resources/fixtures/deployed_noop_for_desired.yml")
+                                                        :key-fn keyword))
+          desired-config (s/conform ::desired-configuration/desired-config
+                                    (yaml/parse-string (slurp "resources/fixtures/desired-config/configuration.yml")
+                                                       :key-fn keyword))]
+      (is (s/valid? ::plan/plan (plan/plan fake-om deployed-config desired-config)))
+      (is (= [] (plan/plan fake-om deployed-config desired-config))))))

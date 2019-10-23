@@ -71,10 +71,10 @@
       (is (= (keys (core/deployed-configuration {} fake-om))
              [:director-config :products :opsman-version]))
       (is (= (:products (core/deployed-configuration {} fake-om))
-             [{:product-name "cf"
-               :version "2.5.4"
-               :stemcells [{:version "250.48"
-                            :os "ubuntu-xenial"}]}])))))
+             #{{:product-name "cf"
+                :version "2.5.4"
+                :stemcells #{{:version "250.48"
+                              :os "ubuntu-xenial"}}}})))))
 
 (deftest current-version
   (stest/instrument `core/current-version)
