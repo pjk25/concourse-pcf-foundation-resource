@@ -5,7 +5,9 @@
             [clojure.data.json :as json]
             [clj-yaml.core :as yaml]
             [me.raynes.conch :as sh]
-            [me.raynes.conch.low-level :as sh-ll])
+            [me.raynes.conch.low-level :as sh-ll]
+            [foundation-lib.configuration :as configuration]
+            [foundation-lib.desired-configuration :as desired-configuration])
   (:import [java.nio.file Files]
            [java.nio.file.attribute FileAttribute]))
 
@@ -32,6 +34,7 @@
   (upload-stemcell [this file])
   (upload-product [this file])
   (stage-product [this config exact-version])
+  (assign-stemcell [this config])
   (configure-product [this config])
   (apply-changes [this options]))
 
@@ -135,11 +138,16 @@
   (stage-product [this config exact-version]
     (sh-om cli-options opsmgr "stage-product" "--product-name" (:product-name config) "--product-version" exact-version))
 
+  (assign-stemcell [this config]
+    (sh-om cli-options opsmgr "assign-stemcell"
+           "--product" (:product-name config)
+           "--stemcell" (:version (first (:stemcells config)))))
+
   (configure-product [this config]
     (let [config-file (-> (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
                           (.toString)
                           (io/file "product-config.yml"))]
-      (spit config-file (yaml/generate-string (dissoc config :source :version)))
+      (spit config-file (yaml/generate-string config))
       (sh-om-side-stream-results cli-options opsmgr "configure-product" "--config" (.toString config-file))))
 
   (apply-changes [this options]
@@ -170,7 +178,7 @@
 
 (s/fdef download-product
         :args (s/cat :this ::om
-                     :config (s/keys :req-un [::product-name ::version ::source])
+                     :config ::desired-configuration/desired-product-config
                      :dir (partial instance? java.io.File))
         :ret string?)
 
@@ -186,9 +194,13 @@
 
 (s/fdef stage-product
         :args (s/cat :this ::om
-                     :config (s/keys :req-un [::product-name])
+                     :config ::desired-configuration/desired-product-config
                      :exact-version string?)
         :ret string?)
+
+(s/fdef assign-stemcells
+  :args (s/cat :this ::om
+               :config ::desired-configuration/desired-product-config))
 
 (s/fdef configure-product
         :args (s/cat :this ::om

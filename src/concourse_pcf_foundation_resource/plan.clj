@@ -162,8 +162,23 @@
 
 (defmethod executor :configure-product [step]
   (fn [cli-options om]
-    ;TODO: assign stemcells if necessary
-    (om-cli/configure-product om (::config step))))
+    (let [config (::config step)
+          stemcell-assignments (json/read-str (om-cli/curl om "/api/v0/stemcell_assignments")
+                                              :key-fn keyword)
+          has-correct-staged-stemcell? (fn [wanted-stemcell]
+                                        (->> stemcell-assignments
+                                                  (:products)
+                                                  (some #(and (= (:identifier %)
+                                                                 (:product-name config))
+                                                              (= (:staged_stemcell_version %)
+                                                                 (:version wanted-stemcell))
+                                                              (= (:required_stemcell_os %)
+                                                                 (:os wanted-stemcell))))))]
+      (if-not (every? has-correct-staged-stemcell? (:stemcells config))
+        (if (= 1 (count (:stemcells config)))
+          (om-cli/assign-stemcell om config)
+          (throw (ex-info "multi-stemcell not supported yet" config))))
+      (om-cli/configure-product om (dissoc config :source :version :stemcells)))))
 
 (defmethod executor :apply-changes [step]
   (fn [cli-options om]
