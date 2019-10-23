@@ -35,6 +35,7 @@
   (upload-product [this file])
   (stage-product [this config exact-version])
   (assign-stemcell [this config])
+  (assign-stemcells [this config])
   (configure-product [this config])
   (apply-changes [this options]))
 
@@ -143,6 +144,12 @@
            "--product" (:product-name config)
            "--stemcell" (:version (first (:stemcells config)))))
 
+  (assign-stemcells [this config]
+    (apply sh-om cli-options opsmgr "assign-multi-stemcell"
+           "--product" (:product-name config)
+           (apply concat (map #(list "--stemcell" (str (:os %) ":" (:version %)))
+                              (:stemcells config)))))
+
   (configure-product [this config]
     (let [config-file (-> (Files/createTempDirectory "concourse-pcf-foundation-resource-" (into-array FileAttribute []))
                           (.toString)
@@ -199,8 +206,9 @@
         :ret string?)
 
 (s/fdef assign-stemcells
-  :args (s/cat :this ::om
-               :config ::desired-configuration/desired-product-config))
+        :args (s/cat :this ::om
+                     :config ::desired-configuration/desired-product-config)
+        :ret string?)
 
 (s/fdef configure-product
         :args (s/cat :this ::om
