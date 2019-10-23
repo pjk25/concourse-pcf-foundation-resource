@@ -123,8 +123,8 @@
   (fn [cli-options om]
     (let [config (::config step)
           source (:source config)
-          download-dir (-> (io/file "product-downloads")
-                           (io/file (:product-name config))
+          download-dir (-> (io/file "stemcell-downloads")
+                           (io/file (:os config))
                            (io/file (:version config)))]
       (if (:debug cli-options)
         (binding [*out* *err*]
