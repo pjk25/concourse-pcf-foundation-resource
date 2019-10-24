@@ -12,7 +12,7 @@
                     (deployed-products [this]
                       (slurp "resources/fixtures/deployed-products/just_director.json")))]
       (is (= :deployed (product/state fake-om {:product-name "p-bosh"
-                                               :version "2.5.4-build.189"
+                                               :version "2.5.4"
                                                :source {:pivnet-file-glob "*.pivotal"}
                                                :stemcells []})))))
 
@@ -21,6 +21,6 @@
                              (deployed-products [this]
                                (slurp "resources/fixtures/deployed-products/just_director.json")))]
                (is (= :deployed (product/state fake-om {:product-name "p-bosh"
-                                                        :version "2.5.4-build.189"
+                                                        :version "2.5.4"
                                                         :source {:pivnet-file-glob "*.pivotal"}
                                                         :stemcells []})))))))

@@ -1,6 +1,7 @@
 (ns concourse-pcf-foundation-resource.query.product
   (:require [clojure.data.json :as json]
             [clojure.spec.alpha :as s]
+            [clojure.string :as string]
             [foundation-lib.desired-configuration :as desired-configuration]
             [concourse-pcf-foundation-resource.om-cli :as om-cli]))
 
@@ -26,16 +27,13 @@
 
 (defn state
   [om product-config]
-  (cond (some #(and (= (:name %) (:product-name product-config))
-                    (= (:version %) (:version product-config)))
-              (deployed-products om)) :deployed
-        (some #(and (= (:name %) (:product-name product-config))
-                    (= (:version %) (:version product-config)))
-              (staged-products om)) :staged
-        (some #(and (= (:name %) (:product-name product-config))
-                    (= (:version %) (:version product-config)))
-              (available-products om)) :uploaded
-        :else :none))
+  (letfn [(matching-product? [{:keys [name version]}]
+            (and (= name (:product-name product-config))
+                 (string/starts-with? version (:version product-config))))]
+    (cond (some matching-product? (deployed-products om)) :deployed
+          (some matching-product? (staged-products om)) :staged
+          (some matching-product? (available-products om)) :uploaded
+          :else :none)))
 
 (s/fdef state
         :args (s/cat :om ::om-cli/om
