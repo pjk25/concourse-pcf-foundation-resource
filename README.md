@@ -22,7 +22,7 @@ If there are any changes being applied, or there are saved changes not yet appli
 
 Additionally, while it may be feasible to cache past versions in the resource container, since historic configs are not available through the OpsMan API, this resource only reports the current version.
 
-Foundation configurations are described by the specs in https://github.com/pjk25/foundation-lib
+Foundation configurations are described by the [specs](https://clojure.org/guides/spec) in https://github.com/pjk25/foundation-lib
 
 ## Source Configuration
 ```yaml
